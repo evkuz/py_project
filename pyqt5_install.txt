@@ -1,0 +1,13 @@
+﻿https://pythonbasics.org/qt-designer-python/
+
+https://habr.com/ru/post/248189/ создаем окружение 
+
+
+sudo apt-get install qttools5-dev-tools
+sudo apt-get install qttools5-dev
+
+sudo apt install python3-pyqt5 
+sudo apt install python3-pyqt5.qtserialport 
+
+После этого запускается окно main.py для открытия serial .
+
