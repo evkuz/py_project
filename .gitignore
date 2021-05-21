@@ -1,0 +1,6 @@
+*
+!nano_serial*
+!nano_serial/*.*
+!*.*
+nano_serial/.idea*
+nano_serial/nano_serial*

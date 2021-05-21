@@ -18,9 +18,10 @@ ui.comL.addItems(portList)
 
 
 def onRead():
-    # if not serial.canReadLine(): return     # выходим если нечего читать
+    if not serial.canReadLine(): return     # выходим если нечего читать
     rx = serial.readLine()
-   # rxs = str(rx, 'utf-8').strip() # Данные в бинарном виде.
+    rxs = str(rx, 'utf-8').strip() # Данные в бинарном виде.
+    data = rxs.split(',')
     print(rx)
 
 
@@ -35,20 +36,51 @@ def onClose():
 
 
 def onClamp():
-    #data = [0x55, 0x22]
-    #tx = str(data)
-    data = "A"
+    # data = [0x55, 0x22]
+    # tx = str(data)
+    # data = "A"
+    data = "93 93 93 45 45 93"
     SerialSend(data.encode())
 
 
 def SerialSend(data):   # список инт
-    tx = serial.write(data)
+    txs = ""
+    for val in data:
+        txs += str(val)
+        txs += ','
+    txs = txs[:-1]
+    txs += ';'
+    print(txs)
+    serial.write(txs.encode())
+
+    # tx = serial.write(data)
+
+
+# Обработка сигнала textChanged
+def S1_data_changed():
+    txs = ui.servo_1_lineEdit.text()
+    print(txs)
+
+
+# Обработка сигнала editingFinished
+def S1_data_changed_2():
+    txs = ui.servo_1_lineEdit.text()
+    print(txs)
 
 
 serial.readyRead.connect(onRead)
 ui.openButton.clicked.connect(onOpen)
 ui.closeButton.clicked.connect(onClose)
 ui.clampButton.clicked.connect(onClamp)
+
+# А этот сигнал эмитируется каждый раз, когда в этом поле что-то меняется. т,е. если вводим 3 цифрцы, то среагирует
+# 3 раза.
+# ui.servo_1_lineEdit.textChanged.connect(S1_data_changed)
+
+# Так лучше, т.к. сигнал срабатывает, когда уже фокус покинул это поле. Вместо реагирования на изменение
+# Каждой цифры, которая вводится в этом поле.
+
+ui.servo_1_lineEdit.editingFinished.connect(S1_data_changed_2)
 
 
 ui.show()
