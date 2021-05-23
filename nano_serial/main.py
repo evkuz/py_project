@@ -69,27 +69,27 @@ def S1_data_changed():
 
 
 def S2_data_changed():
-    txs = ui.servo_1_lineEdit.text()
+    txs = ui.servo_2_lineEdit.text()
     print(txs)
 
 
 def S3_data_changed():
-    txs = ui.servo_1_lineEdit.text()
+    txs = ui.servo_3_lineEdit.text()
     print(txs)
 
 
 def S4_data_changed():
-    txs = ui.servo_1_lineEdit.text()
+    txs = ui.servo_4_lineEdit.text()
     print(txs)
 
 
 def S5_data_changed():
-    txs = ui.servo_1_lineEdit.text()
+    txs = ui.servo_5_lineEdit.text()
     print(txs)
 
 
 def S6_data_changed():
-    txs = ui.servo_1_lineEdit.text()
+    txs = ui.servo_6_lineEdit.text()
     print(txs)
 
 
@@ -105,10 +105,18 @@ def onSerial_getData(serialData):
     return serialData
 
 
-    serial.readyRead.connect(onRead)
+serial.readyRead.connect(onRead)
 ui.openButton.clicked.connect(onOpen)
 ui.closeButton.clicked.connect(onClose)
 ui.clampButton.clicked.connect(onClamp)
+
+linedits = []
+linedits.append(ui.servo_1_lineEdit)
+linedits.append(ui.servo_2_lineEdit)
+linedits.append(ui.servo_3_lineEdit)
+linedits.append(ui.servo_4_lineEdit)
+linedits.append(ui.servo_5_lineEdit)
+linedits.append(ui.servo_6_lineEdit)
 
 # А этот сигнал эмитируется каждый раз, когда в этом поле что-то меняется. т,е. если вводим 3 цифрцы, то среагирует
 # 3 раза.
@@ -118,11 +126,11 @@ ui.clampButton.clicked.connect(onClamp)
 # Каждой цифры, которая вводится в этом поле.
 
 ui.servo_1_lineEdit.editingFinished.connect(S1_data_changed)
-ui.servo_1_lineEdit.editingFinished.connect(S2_data_changed)
-ui.servo_1_lineEdit.editingFinished.connect(S3_data_changed)
-ui.servo_1_lineEdit.editingFinished.connect(S4_data_changed)
-ui.servo_1_lineEdit.editingFinished.connect(S5_data_changed)
-ui.servo_1_lineEdit.editingFinished.connect(S6_data_changed)
+ui.servo_2_lineEdit.editingFinished.connect(S2_data_changed)
+ui.servo_3_lineEdit.editingFinished.connect(S3_data_changed)
+ui.servo_4_lineEdit.editingFinished.connect(S4_data_changed)
+ui.servo_5_lineEdit.editingFinished.connect(S5_data_changed)
+ui.servo_6_lineEdit.editingFinished.connect(S6_data_changed)
 
 
 
