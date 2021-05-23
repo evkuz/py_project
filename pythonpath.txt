@@ -1,0 +1,3 @@
+/usr/bin/python3.8
+
+/home/evkuz/.local/lib/python3.8/site-packages (12.9.0)

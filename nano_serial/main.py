@@ -57,18 +57,55 @@ def SerialSend(data):   # список инт
 
 
 # Обработка сигнала textChanged
+# def S1_data_changed():
+#    txs = ui.servo_1_lineEdit.text()
+ #   print(txs)
+
+
+# Обработка сигнала editingFinished
 def S1_data_changed():
     txs = ui.servo_1_lineEdit.text()
     print(txs)
 
 
-# Обработка сигнала editingFinished
-def S1_data_changed_2():
+def S2_data_changed():
     txs = ui.servo_1_lineEdit.text()
     print(txs)
 
 
-serial.readyRead.connect(onRead)
+def S3_data_changed():
+    txs = ui.servo_1_lineEdit.text()
+    print(txs)
+
+
+def S4_data_changed():
+    txs = ui.servo_1_lineEdit.text()
+    print(txs)
+
+
+def S5_data_changed():
+    txs = ui.servo_1_lineEdit.text()
+    print(txs)
+
+
+def S6_data_changed():
+    txs = ui.servo_1_lineEdit.text()
+    print(txs)
+
+
+def onSerial_getData(serialData):
+    # Собираем данные из servo_[1-6]_lineEdit, кладем их в массив
+    # Это и будет точка взятия данных для нейронной сети
+    serialData.append(int(ui.servo_1_lineEdit.text()))
+    serialData.append(int(ui.servo_2_lineEdit.text()))
+    serialData.append(int(ui.servo_3_lineEdit.text()))
+    serialData.append(int(ui.servo_4_lineEdit.text()))
+    serialData.append(int(ui.servo_5_lineEdit.text()))
+    serialData.append(int(ui.servo_6_lineEdit.text()))
+    return serialData
+
+
+    serial.readyRead.connect(onRead)
 ui.openButton.clicked.connect(onOpen)
 ui.closeButton.clicked.connect(onClose)
 ui.clampButton.clicked.connect(onClamp)
@@ -80,7 +117,13 @@ ui.clampButton.clicked.connect(onClamp)
 # Так лучше, т.к. сигнал срабатывает, когда уже фокус покинул это поле. Вместо реагирования на изменение
 # Каждой цифры, которая вводится в этом поле.
 
-ui.servo_1_lineEdit.editingFinished.connect(S1_data_changed_2)
+ui.servo_1_lineEdit.editingFinished.connect(S1_data_changed)
+ui.servo_1_lineEdit.editingFinished.connect(S2_data_changed)
+ui.servo_1_lineEdit.editingFinished.connect(S3_data_changed)
+ui.servo_1_lineEdit.editingFinished.connect(S4_data_changed)
+ui.servo_1_lineEdit.editingFinished.connect(S5_data_changed)
+ui.servo_1_lineEdit.editingFinished.connect(S6_data_changed)
+
 
 
 ui.show()
