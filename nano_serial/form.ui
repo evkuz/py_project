@@ -64,6 +64,9 @@
      <height>25</height>
     </rect>
    </property>
+   <property name="text">
+    <string>90</string>
+   </property>
   </widget>
   <widget class="QLineEdit" name="servo_2_lineEdit">
    <property name="geometry">
@@ -73,6 +76,9 @@
      <width>61</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="text">
+    <string>90</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="servo_3_lineEdit">
@@ -84,6 +90,9 @@
      <height>25</height>
     </rect>
    </property>
+   <property name="text">
+    <string>90</string>
+   </property>
   </widget>
   <widget class="QLineEdit" name="servo_4_lineEdit">
    <property name="geometry">
@@ -93,6 +102,9 @@
      <width>61</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="text">
+    <string>90</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="servo_5_lineEdit">
@@ -104,6 +116,9 @@
      <height>25</height>
     </rect>
    </property>
+   <property name="text">
+    <string>90</string>
+   </property>
   </widget>
   <widget class="QLineEdit" name="servo_6_lineEdit">
    <property name="geometry">
@@ -113,6 +128,9 @@
      <width>61</width>
      <height>25</height>
     </rect>
+   </property>
+   <property name="text">
+    <string>90</string>
    </property>
   </widget>
  </widget>
