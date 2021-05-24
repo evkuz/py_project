@@ -21,7 +21,7 @@ def onRead():
     if not serial.canReadLine(): return  # выходим если нечего читать
     rx = serial.readLine()
     rxs = str(rx, 'utf-8').strip()  # Данные в бинарном виде.
-    data = rxs.split(',')
+    # data = rxs.split(',')
     print(rx)
 
 
@@ -39,8 +39,28 @@ def onClamp():
     # data = [0x55, 0x22]
     # tx = str(data)
     # data = "A"
-    data = "93 93 93 45 45 93"
-    SerialSend(data.encode())
+    data = [93, 93, 93, 45, 45, 93]
+    for i in range(0, 6):
+        linedits[i].setText(str(data[i]))
+
+    #  SerialSend(data)
+
+
+def onStandUP():
+    # data = [0x55, 0x22]
+    # tx = str(data)
+    # data = "A"
+    data = [93, 93, 93, 93, 93, 93]
+    for i in range(0, 6):
+        linedits[i].setText(str(data[i]))
+    # SerialSend(data)
+
+
+def onSetPosition():
+    for i in range(0, 6):
+        serialData[i] = int(linedits[i].text())
+        # print(serialData[i])
+    SerialSend(serialData)
 
 
 def SerialSend(data):  # список инт
@@ -108,6 +128,8 @@ serial.readyRead.connect(onRead)
 ui.openButton.clicked.connect(onOpen)
 ui.closeButton.clicked.connect(onClose)
 ui.clampButton.clicked.connect(onClamp)
+ui.stand_upButton.clicked.connect(onStandUP)
+ui.set_posButton.clicked.connect(onSetPosition)
 
 linedits = [ui.servo_1_lineEdit, ui.servo_2_lineEdit, ui.servo_3_lineEdit, ui.servo_4_lineEdit,
             ui.servo_5_lineEdit, ui.servo_6_lineEdit]
@@ -126,11 +148,9 @@ linedits = [ui.servo_1_lineEdit, ui.servo_2_lineEdit, ui.servo_3_lineEdit, ui.se
 # serialData.append(int(ui.servo_5_lineEdit.text()))
 # serialData.append(int(ui.servo_6_lineEdit.text()))
 
-# Создаем массив данных
+# Создаем массив данных для   ОТАРВКИ в порт
 serialData = [int(ui.servo_1_lineEdit.text()), int(ui.servo_2_lineEdit.text()), int(ui.servo_3_lineEdit.text()),
               int(ui.servo_4_lineEdit.text()), int(ui.servo_5_lineEdit.text()), int(ui.servo_6_lineEdit.text())]
-
-
 
 # А этот сигнал эмитируется каждый раз, когда в этом поле что-то меняется. т,е. если вводим 3 цифрцы, то среагирует
 # 3 раза.
