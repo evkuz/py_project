@@ -20,13 +20,6 @@ opposite_catch = [93, 93, 180, 125, 40, 60]
 #wrong_position = [93, 93, 2, 0, 10, 120]
 wrong_position = [30, 30, 30, 30, 30, 30]
 
-# b'From robot after get_all_servo  :  120, 93, 7, 10, 120, 93, \r\n'
-# b'From robot after get_all_servo  :  93, 93, 2, 0, 10, 120, \r\n'
-
-# 93, 93, 2, 15, 110, 93
-# 93, 93, 93, 93, 93, 93
-
-
 app = QtWidgets.QApplication([])
 ui = uic.loadUi("form.ui")
 ui.setWindowTitle("SerialGUI")
@@ -42,7 +35,8 @@ ui.comL.addItems(portList)
 
 
 def onRead():
-    if not serial.canReadLine(): return  # выходим если нечего читать
+    if not serial.canReadLine():
+        return  # выходим если нечего читать
     rx = serial.readLine()
     rxs = str(rx, 'utf-8').strip()  # Данные в бинарном виде.
     # data = rxs.split(',')
@@ -50,7 +44,6 @@ def onRead():
 
 
 def onOpen():
-    # print("Done !")
     serial.setPortName(ui.comL.currentText())
     serial.open(QIODevice.ReadWrite)
 
@@ -73,27 +66,15 @@ def print_data_2_send():
     print(message)
 
 
-
-
 def onClamp():
-    data = [45, 93, 93, 93, 93, 93]
-    # tx = str(data)
-    # data = "A"
-    # data = [93, 93, 93, 45, 45, 93]
-    # for i in range(0, 6):
-        # linedits[i].setText(str(data[i]))
     linedits[0].setText("45")
     serialData[0] = int(linedits[0].text())
-    SerialSend(data)
+    SerialSend(serialData)
 
 
 def onStandUP():
-    # data = [0x55, 0x22]
-    # tx = str(data)
-    # data = "A"
-    data = [93, 93, 93, 93, 93, 93]
-    for i in range(0, 6):
-        linedits[i].setText(str(data[i]))
+     for i in range(0, 6):
+        linedits[i].setText(str(hwr_Start_position[i]))
     # SerialSend(data)
 
 
@@ -104,7 +85,7 @@ def onGetBox():
     SerialSend(serialData)  # Go to down position
     # Надо дождаться выполнения
     # wait for robot finish
-    release_clamp() # Захват открывается одновременно с движением робота.
+    release_clamp() # Открываем Захват
     for i in range(0, 6):
         linedits[i].setText(str(catch_box[i]))
     prepare_data()
@@ -119,7 +100,6 @@ def onGetBox():
     prepare_data()
     print_data_2_send()
     SerialSend(serialData)
-
 
 
 # Копируем фикс. данные позиции в текстровые окна
@@ -137,6 +117,7 @@ def release_clamp():
     SerialSend(serialData)
 
 
+# Обработка нажатия кнопки "Set position"
 def onSetPosition():
     for i in range(0, 6):
         serialData[i] = int(linedits[i].text())
@@ -166,33 +147,9 @@ def SerialSend(data):  # список инт
 
 
 # Обработка сигнала editingFinished
+# Оставлю на память. Остальные не нужны
 def S1_data_changed():
     txs = ui.servo_1_lineEdit.text()
-    print(txs)
-
-
-def S2_data_changed():
-    txs = ui.servo_2_lineEdit.text()
-    print(txs)
-
-
-def S3_data_changed():
-    txs = ui.servo_3_lineEdit.text()
-    print(txs)
-
-
-def S4_data_changed():
-    txs = ui.servo_4_lineEdit.text()
-    print(txs)
-
-
-def S5_data_changed():
-    txs = ui.servo_5_lineEdit.text()
-    print(txs)
-
-
-def S6_data_changed():
-    txs = ui.servo_6_lineEdit.text()
     print(txs)
 
 
@@ -201,7 +158,7 @@ def onSerial_getData(sData):
     # Собираем данные из servo_[1-6]_lineEdit, кладем их в массив
     # Это и будет точка взятия данных для нейронной сети
 
-    for i in range(0 - 6):
+    for i in range(0, 6):
         sData[i] = linedits[i].text()
 
     return sData
@@ -231,11 +188,11 @@ serialData = [int(ui.servo_1_lineEdit.text()), int(ui.servo_2_lineEdit.text()), 
 # Каждой цифры, которая вводится в этом поле.
 
 ui.servo_1_lineEdit.editingFinished.connect(S1_data_changed)
-ui.servo_2_lineEdit.editingFinished.connect(S2_data_changed)
-ui.servo_3_lineEdit.editingFinished.connect(S3_data_changed)
-ui.servo_4_lineEdit.editingFinished.connect(S4_data_changed)
-ui.servo_5_lineEdit.editingFinished.connect(S5_data_changed)
-ui.servo_6_lineEdit.editingFinished.connect(S6_data_changed)
+# ui.servo_2_lineEdit.editingFinished.connect(S2_data_changed)
+# ui.servo_3_lineEdit.editingFinished.connect(S3_data_changed)
+# ui.servo_4_lineEdit.editingFinished.connect(S4_data_changed)
+# ui.servo_5_lineEdit.editingFinished.connect(S5_data_changed)
+# ui.servo_6_lineEdit.editingFinished.connect(S6_data_changed)
 
 ui.show()
 app.exec()
