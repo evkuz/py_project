@@ -130,8 +130,6 @@ linedits = [ui.servo_1_lineEdit, ui.servo_2_lineEdit, ui.servo_3_lineEdit, ui.se
 serialData = [int(ui.servo_1_lineEdit.text()), int(ui.servo_2_lineEdit.text()), int(ui.servo_3_lineEdit.text()),
               int(ui.servo_4_lineEdit.text()), int(ui.servo_5_lineEdit.text()), int(ui.servo_6_lineEdit.text())]
 
-
-
 # А этот сигнал эмитируется каждый раз, когда в этом поле что-то меняется. т,е. если вводим 3 цифрцы, то среагирует
 # 3 раза.
 # ui.servo_1_lineEdit.textChanged.connect(S1_data_changed)
