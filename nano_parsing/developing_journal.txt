@@ -29,6 +29,24 @@
 Буду делать свой парсинг.
 Перехожу в проект nano_parsing
 
+Да, вся проблема была с парсингом.
+
+Стал передавать данные просто в двоичном виде, без перевода в строку.
+Ну, пришлось, конечно, попотеть...
+
+Вся проблема с перевдом массива, который в python называется list в массив QByteArray.
+...
+from PySide2.QtCore import QByteArray
+
+
+    dd = bytes(data)
+    qbdata = QByteArray(QByteArray.fromRawData(dd))
+    tx = serial.writeData(qbdata)
+...
+Так данные передаются !!!!!!!!!!!!!!
+
+
+
 
 
 

@@ -1,7 +1,10 @@
 # This is a sample Python script.
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
-from PyQt5.QtCore import QIODevice
+from PyQt5.QtCore import QIODevice # , QByteArray
+from PySide2.QtCore import QByteArray
+import sys
+
 import time
 
 
@@ -11,7 +14,7 @@ sit_down_position = [93, 93, 93, 48, 48, 93]   # ; // Поза сидя. Сдв�
 horse_position = [93, 93, 0, 48, 48, 93]       # ;
 horse_mirror_position = [45, 93, 180, 135, 135, 93]  # ;
 ready_to_catch = [93, 93, 2, 15, 110, 93]            # ;
-catch_box = [70, 93, 7, 10, 120, 93]                 # ;
+catch_box = [80, 93, 7, 10, 120, 93]                 # ;
 opposite_catch = [93, 93, 180, 125, 40, 60]
 
 #wrong_position = [93, 93, 2, 0, 10, 120]
@@ -73,7 +76,7 @@ def print_data_2_send():
 
 
 def onClamp():
-    # data = [0x55, 0x22]
+    data = [45, 93, 93, 93, 93, 93]
     # tx = str(data)
     # data = "A"
     # data = [93, 93, 93, 45, 45, 93]
@@ -150,9 +153,10 @@ def SerialSend(data):  # список инт
     txs += ';'
     # txs = ','.join(str(data)) + ';'
     print(txs)
-    serial.write(txs.encode())
-
-    # tx = serial.write(data)
+    # serial.write(txs.encode())
+    dd = bytes(data)
+    qbdata = QByteArray(QByteArray.fromRawData(dd))
+    tx = serial.writeData(qbdata)
 
 
 # Обработка сигнала textChanged
