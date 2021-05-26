@@ -16,6 +16,8 @@ horse_mirror_position = [45, 93, 180, 135, 135, 93]  # ;
 ready_to_catch = [93, 93, 2, 15, 110, 93]            # ;
 catch_box = [80, 93, 7, 10, 120, 93]                 # ;
 opposite_catch = [93, 93, 180, 125, 40, 60]
+horse_1 = [93, 93, 170, 180, 163, 137]
+horse_2 = [93, 93, 1, 11, 21, 137]
 
 #wrong_position = [93, 93, 2, 0, 10, 120]
 wrong_position = [30, 30, 30, 30, 30, 30]
@@ -70,36 +72,43 @@ def onClamp():
     linedits[0].setText("45")
     serialData[0] = int(linedits[0].text())
     SerialSend(serialData)
+    updateSliders()
 
 
 def onStandUP():
      for i in range(0, 6):
         linedits[i].setText(str(hwr_Start_position[i]))
     # SerialSend(data)
+     updateSliders()
 
 
 def onGetBox():
     for i in range(0, 6):
         linedits[i].setText(str(ready_to_catch[i]))
     prepare_data()
+    updateSliders()
     SerialSend(serialData)  # Go to down position
     # Надо дождаться выполнения
     # wait for robot finish
     release_clamp() # Открываем Захват
+    updateSliders()
     for i in range(0, 6):
         linedits[i].setText(str(catch_box[i]))
     prepare_data()
     SerialSend(serialData) # make catch_box
+    updateSliders()
 
     for i in range(0, 6):
         linedits[i].setText(str(ready_to_catch[i]))
     prepare_data()
     SerialSend(serialData)
+    updateSliders()
     for i in range(0, 6):
         linedits[i].setText(str(hwr_Start_position[i]))
     prepare_data()
     print_data_2_send()
     SerialSend(serialData)
+    updateSliders()
 
 
 # Копируем фикс. данные позиции в текстровые окна
@@ -109,6 +118,7 @@ def onSitPosition():  # sit_down_position
     for i in range(0, 6):
         serialData[i] = int(linedits[i].text())
     SerialSend(serialData)
+    updateSliders()
 
 
 def release_clamp():
@@ -123,6 +133,7 @@ def onSetPosition():
         serialData[i] = int(linedits[i].text())
         # print(serialData[i])
     SerialSend(serialData)
+    updateSliders()
 
 
 def SerialSend(data):  # список инт
@@ -164,6 +175,82 @@ def onSerial_getData(sData):
     return sData
 
 
+#============================= Slider group
+def onS1_Slider():
+    slval = ui.S1_verSlider.value()
+    ui.servo_1_lineEdit.setText(str(slval))
+    print(slval)
+#    serialData[0] = slval
+    prepare_data()
+    SerialSend(serialData)
+
+
+def onS2_Slider():
+    slval = ui.S2_verSlider.value()
+    ui.servo_2_lineEdit.setText(str(slval))
+    print(slval)
+#    serialData[1] = slval
+    prepare_data()
+    SerialSend(serialData)
+
+
+def onS3_Slider():
+    slval = ui.S3_verSlider.value()
+    ui.servo_3_lineEdit.setText(str(slval))
+    print(slval)
+#    serialData[2] = slval
+    prepare_data()
+    SerialSend(serialData)
+
+
+def onS4_Slider():
+    slval = ui.S4_verSlider.value()
+    ui.servo_4_lineEdit.setText(str(slval))
+    print(slval)
+    prepare_data()
+ #   serialData[3] = slval
+    SerialSend(serialData)
+
+
+def onS5_Slider():
+    slval = ui.S5_verSlider.value()
+    ui.servo_5_lineEdit.setText(str(slval))
+    print(slval)
+#    serialData[4] = slval
+    prepare_data()
+    SerialSend(serialData)
+
+
+def onS6_Slider():
+    slval = ui.S6_verSlider.value()
+    ui.servo_6_lineEdit.setText(str(slval))
+    print(slval)
+#    serialData[5] = slval
+    prepare_data()
+    SerialSend(serialData)
+
+
+def updateSliders():
+    for i in range(0, 6):
+        sliders[i].setValue(int(linedits[i].text()))
+
+
+def onHorse_1_Button():
+    for i in range(0, 6):
+        linedits[i].setText(str(horse_1[i]))
+    prepare_data()
+    SerialSend(serialData)
+    updateSliders()
+
+
+def onHorse_2_Button():
+    for i in range(0, 6):
+        linedits[i].setText(str(horse_2[i]))
+    prepare_data()
+    SerialSend(serialData)
+    updateSliders()
+
+
 serial.readyRead.connect(onRead)
 ui.openButton.clicked.connect(onOpen)
 ui.closeButton.clicked.connect(onClose)
@@ -172,9 +259,25 @@ ui.stand_upButton.clicked.connect(onStandUP)
 ui.set_posButton.clicked.connect(onSetPosition)
 ui.sitButton.clicked.connect(onSitPosition)
 ui.getBoxButton.clicked.connect(onGetBox)
+#==================================
+ui.horse_1_Button.clicked.connect(onHorse_1_Button)
+ui.horse_2_Button.clicked.connect(onHorse_2_Button)
+
+
+#=============== Slider group
+ui.S1_verSlider.valueChanged.connect(onS1_Slider)
+ui.S2_verSlider.valueChanged.connect(onS2_Slider)
+ui.S3_verSlider.valueChanged.connect(onS3_Slider)
+ui.S4_verSlider.valueChanged.connect(onS4_Slider)
+ui.S5_verSlider.valueChanged.connect(onS5_Slider)
+ui.S6_verSlider.valueChanged.connect(onS6_Slider)
+
+
 
 linedits = [ui.servo_1_lineEdit, ui.servo_2_lineEdit, ui.servo_3_lineEdit, ui.servo_4_lineEdit,
             ui.servo_5_lineEdit, ui.servo_6_lineEdit]
+
+sliders = [ui.S1_verSlider, ui.S2_verSlider, ui.S3_verSlider, ui.S4_verSlider, ui.S5_verSlider, ui.S6_verSlider]
 
 # Создаем массив данных для   ОТПРАВКИ в порт
 serialData = [int(ui.servo_1_lineEdit.text()), int(ui.servo_2_lineEdit.text()), int(ui.servo_3_lineEdit.text()),
