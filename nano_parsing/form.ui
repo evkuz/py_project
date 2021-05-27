@@ -429,6 +429,19 @@
     <string>Horse-2</string>
    </property>
   </widget>
+  <widget class="QPushButton" name="get_putBoxButton">
+   <property name="geometry">
+    <rect>
+     <x>600</x>
+     <y>250</y>
+     <width>141</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Get + PUT Box</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

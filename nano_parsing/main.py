@@ -1,25 +1,30 @@
 # This is a sample Python script.
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
-from PyQt5.QtCore import QIODevice # , QByteArray
+from PyQt5.QtCore import QIODevice  # , QByteArray
 from PySide2.QtCore import QByteArray
 import sys
 
 import time
 
-
 # /*Координаты начальной/стартовой позиции*/
 hwr_Start_position = [93, 93, 93, 93, 93, 93]  # ; // servo1,,,servo6
-sit_down_position = [93, 93, 93, 48, 48, 93]   # ; // Поза сидя. Сдвинуты 4,5 приводы (относительно 93)
-horse_position = [93, 93, 0, 48, 48, 93]       # ;
+sit_down_position = [93, 93, 93, 48, 48, 93]  # ; // Поза сидя. Сдвинуты 4,5 приводы (относительно 93)
+horse_position = [93, 93, 0, 48, 48, 93]  # ;
 horse_mirror_position = [45, 93, 180, 135, 135, 93]  # ;
-ready_to_catch = [93, 93, 2, 15, 110, 93]            # ;
-catch_box = [80, 93, 7, 10, 120, 93]                 # ;
+ready_to_catch = [93, 93, 2, 15, 110, 93]  # ;
+catch_box = [80, 93, 7, 10, 120, 93]  # ;
 opposite_catch = [93, 93, 180, 125, 40, 60]
 horse_1 = [93, 93, 170, 180, 163, 137]
 horse_2 = [93, 93, 1, 11, 21, 137]
 
-#wrong_position = [93, 93, 2, 0, 10, 120]
+ready_to_catch_2 = [93, 93, 0, 27, 117, 51]
+catch_box_2 = [80, 93, 11, 11, 117, 51]
+ready_to_put_box_2 = [93, 93, 0, 4, 98, 175]
+put_box_2 = [45, 93, 0, 7, 113, 180]
+catch_box_3 = [80, 93, 0, 7, 113, 180]
+
+# wrong_position = [93, 93, 2, 0, 10, 120]
 wrong_position = [30, 30, 30, 30, 30, 30]
 
 app = QtWidgets.QApplication([])
@@ -40,7 +45,7 @@ def onRead():
     if not serial.canReadLine():
         return  # выходим если нечего читать
     rx = serial.readLine()
-    rxs = str(rx, 'utf-8').strip()  # Данные в бинарном виде.
+    # rxs = str(rx, 'utf-8').strip()  # Данные в бинарном виде.
     # data = rxs.split(',')
     print(rx)
 
@@ -48,6 +53,9 @@ def onRead():
 def onOpen():
     serial.setPortName(ui.comL.currentText())
     serial.open(QIODevice.ReadWrite)
+    serial.clear()
+    print("Serial buffer sise :")
+    print(serial.readBufferSize())
 
 
 def onClose():
@@ -65,6 +73,7 @@ def print_data_2_send():
     for i in range(0, 6):
         message += str(serialData[i])
         message += ", "
+    message = message[:-2]
     print(message)
 
 
@@ -76,48 +85,82 @@ def onClamp():
 
 
 def onStandUP():
-     for i in range(0, 6):
+    for i in range(0, 6):
         linedits[i].setText(str(hwr_Start_position[i]))
     # SerialSend(data)
-     updateSliders()
+    updateSliders()
 
 
 def onGetBox():
     for i in range(0, 6):
-        linedits[i].setText(str(ready_to_catch[i]))
+        linedits[i].setText(str(ready_to_catch_2[i])) # Встаем в позу перед захватом
     prepare_data()
-    updateSliders()
     SerialSend(serialData)  # Go to down position
+    #updateSliders()
     # Надо дождаться выполнения
     # wait for robot finish
-    release_clamp() # Открываем Захват
-    updateSliders()
+    release_clamp()  # Открываем Захват
+    # onClamp()
+    #prepare_data()
+    # updateSliders()
+    # # Делаем захват
     for i in range(0, 6):
-        linedits[i].setText(str(catch_box[i]))
+        linedits[i].setText(str(catch_box_2[i]))
     prepare_data()
-    SerialSend(serialData) # make catch_box
-    updateSliders()
-
+    SerialSend(serialData)  # make catch_box
+    # # Встаем в позу перед захватом
     for i in range(0, 6):
-        linedits[i].setText(str(ready_to_catch[i]))
+        linedits[i].setText(str(ready_to_catch_[i]))
     prepare_data()
     SerialSend(serialData)
-    updateSliders()
+    # # Возврат на исходную
     for i in range(0, 6):
         linedits[i].setText(str(hwr_Start_position[i]))
     prepare_data()
-    print_data_2_send()
+    # # print_data_2_send()
     SerialSend(serialData)
-    updateSliders()
+
+# =============================================================
+
+
+def onPut_GetBox():
+    for i in range(0, 6):
+        linedits[i].setText(str(ready_to_catch_2[i])) # Встаем в позу перед захватом
+    prepare_data()
+    SerialSend(serialData)  # Go to down position
+    #updateSliders()
+    # Надо дождаться выполнения
+    # wait for robot finish
+    release_clamp()  # Открываем Захват
+    # onClamp()
+    #prepare_data()
+    # updateSliders()
+    # # Делаем захват
+    for i in range(0, 6):
+        linedits[i].setText(str(catch_box_2[i]))
+    prepare_data()
+    SerialSend(serialData)  # make catch_box
+    # # Встаем в позу перед захватом
+    for i in range(0, 6):
+        linedits[i].setText(str(sit_down_position[i]))
+    prepare_data()
+    SerialSend(serialData)
+    # # Возврат на исходную
+    for i in range(0, 6):
+        linedits[i].setText(str(put_box_2[i]))
+    prepare_data()
+    # # print_data_2_send()
+    SerialSend(serialData)
 
 
 # Копируем фикс. данные позиции в текстровые окна
 def onSitPosition():  # sit_down_position
     for i in range(0, 6):
         linedits[i].setText(str(sit_down_position[i]))
-    for i in range(0, 6):
-        serialData[i] = int(linedits[i].text())
-    SerialSend(serialData)
+        prepare_data()
+    # for i in range(0, 6):
+    #     serialData[i] = int(linedits[i].text())
+    #SerialSend(serialData)
     updateSliders()
 
 
@@ -132,7 +175,7 @@ def onSetPosition():
     for i in range(0, 6):
         serialData[i] = int(linedits[i].text())
         # print(serialData[i])
-    SerialSend(serialData)
+    # SerialSend(serialData)
     updateSliders()
 
 
@@ -148,6 +191,7 @@ def SerialSend(data):  # список инт
     # serial.write(txs.encode())
     dd = bytes(data)
     qbdata = QByteArray(QByteArray.fromRawData(dd))
+    # serial.clear()
     tx = serial.writeData(qbdata)
 
 
@@ -175,13 +219,14 @@ def onSerial_getData(sData):
     return sData
 
 
-#============================= Slider group
+# ============================= Slider group
 def onS1_Slider():
     slval = ui.S1_verSlider.value()
     ui.servo_1_lineEdit.setText(str(slval))
     print(slval)
-#    serialData[0] = slval
+    #    serialData[0] = slval
     prepare_data()
+    print_data_2_send()
     SerialSend(serialData)
 
 
@@ -189,7 +234,7 @@ def onS2_Slider():
     slval = ui.S2_verSlider.value()
     ui.servo_2_lineEdit.setText(str(slval))
     print(slval)
-#    serialData[1] = slval
+    #    serialData[1] = slval
     prepare_data()
     SerialSend(serialData)
 
@@ -198,7 +243,7 @@ def onS3_Slider():
     slval = ui.S3_verSlider.value()
     ui.servo_3_lineEdit.setText(str(slval))
     print(slval)
-#    serialData[2] = slval
+    #    serialData[2] = slval
     prepare_data()
     SerialSend(serialData)
 
@@ -208,7 +253,7 @@ def onS4_Slider():
     ui.servo_4_lineEdit.setText(str(slval))
     print(slval)
     prepare_data()
- #   serialData[3] = slval
+    #   serialData[3] = slval
     SerialSend(serialData)
 
 
@@ -216,7 +261,7 @@ def onS5_Slider():
     slval = ui.S5_verSlider.value()
     ui.servo_5_lineEdit.setText(str(slval))
     print(slval)
-#    serialData[4] = slval
+    #    serialData[4] = slval
     prepare_data()
     SerialSend(serialData)
 
@@ -225,7 +270,7 @@ def onS6_Slider():
     slval = ui.S6_verSlider.value()
     ui.servo_6_lineEdit.setText(str(slval))
     print(slval)
-#    serialData[5] = slval
+    #    serialData[5] = slval
     prepare_data()
     SerialSend(serialData)
 
@@ -259,20 +304,17 @@ ui.stand_upButton.clicked.connect(onStandUP)
 ui.set_posButton.clicked.connect(onSetPosition)
 ui.sitButton.clicked.connect(onSitPosition)
 ui.getBoxButton.clicked.connect(onGetBox)
-#==================================
+# ==================================
 ui.horse_1_Button.clicked.connect(onHorse_1_Button)
 ui.horse_2_Button.clicked.connect(onHorse_2_Button)
-
-
-#=============== Slider group
+ui.get_putBoxButton.clicked.connect(onPut_GetBox)
+# =============== Slider group
 ui.S1_verSlider.valueChanged.connect(onS1_Slider)
 ui.S2_verSlider.valueChanged.connect(onS2_Slider)
 ui.S3_verSlider.valueChanged.connect(onS3_Slider)
 ui.S4_verSlider.valueChanged.connect(onS4_Slider)
 ui.S5_verSlider.valueChanged.connect(onS5_Slider)
 ui.S6_verSlider.valueChanged.connect(onS6_Slider)
-
-
 
 linedits = [ui.servo_1_lineEdit, ui.servo_2_lineEdit, ui.servo_3_lineEdit, ui.servo_4_lineEdit,
             ui.servo_5_lineEdit, ui.servo_6_lineEdit]
@@ -296,6 +338,8 @@ ui.servo_1_lineEdit.editingFinished.connect(S1_data_changed)
 # ui.servo_4_lineEdit.editingFinished.connect(S4_data_changed)
 # ui.servo_5_lineEdit.editingFinished.connect(S5_data_changed)
 # ui.servo_6_lineEdit.editingFinished.connect(S6_data_changed)
+
+
 
 ui.show()
 app.exec()
