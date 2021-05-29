@@ -3,8 +3,7 @@ from PyQt5 import QtWidgets, uic
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 from PyQt5.QtCore import QIODevice  # , QByteArray
 from PySide2.QtCore import QByteArray
-import sys
-
+# import sys
 import time
 
 SerialSPEED = 115200
@@ -32,6 +31,8 @@ app = QtWidgets.QApplication([])
 ui = uic.loadUi("form.ui")
 ui.setWindowTitle("SerialGUI")
 
+cameFrom = False
+
 serial = QSerialPort()
 serial.setBaudRate(SerialSPEED)
 portList = []
@@ -45,6 +46,8 @@ ui.comL.addItems(portList)
 def onRead():
     if not serial.canReadLine():
         return  # выходим если нечего читать
+    global cameFrom
+    cameFrom = True  # Сигналим, что данные пришли
     rx = serial.readLine()
     # rxs = str(rx, 'utf-8').strip()  # Данные в бинарном виде.
     # data = rxs.split(',')
@@ -161,7 +164,7 @@ def onPut_GetBox():
     GoToPosition(put_box_2)
     print("wait 2 seconds")
     time.sleep(2)
-    GoToPosition(ready_to_put_box_2) # Вернулись в позицию перед установкой на место
+    GoToPosition(ready_to_put_box_2)  # Вернулись в позицию перед установкой на место
     print("wait 2 seconds")
     time.sleep(2)
     # Возврат на исходную
@@ -208,6 +211,10 @@ def SerialSend(data):  # список инт
         pass
     serial.flush()
     print("All bytes are written")
+    global cameFrom
+    while not cameFrom:
+        pass  # Ждем ответа от Робота
+    cameFrom = False
 
 
 # Обработка сигнала textChanged
