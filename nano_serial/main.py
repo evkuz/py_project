@@ -2,6 +2,27 @@
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 from PyQt5.QtCore import QIODevice
+import time
+
+
+# /*Координаты начальной/стартовой позиции*/
+hwr_Start_position = [93, 93, 93, 93, 93, 93]  # ; // servo1,,,servo6
+sit_down_position = [93, 93, 93, 48, 48, 93]   # ; // Поза сидя. Сдвинуты 4,5 приводы (относительно 93)
+horse_position = [93, 93, 0, 48, 48, 93]       # ;
+horse_mirror_position = [45, 93, 180, 135, 135, 93]  # ;
+ready_to_catch = [93, 93, 2, 15, 110, 93]            # ;
+catch_box = [70, 93, 7, 10, 120, 93]                 # ;
+opposite_catch = [93, 93, 180, 125, 40, 60]
+
+#wrong_position = [93, 93, 2, 0, 10, 120]
+wrong_position = [30, 30, 30, 30, 30, 30]
+
+# b'From robot after get_all_servo  :  120, 93, 7, 10, 120, 93, \r\n'
+# b'From robot after get_all_servo  :  93, 93, 2, 0, 10, 120, \r\n'
+
+# 93, 93, 2, 15, 110, 93
+# 93, 93, 93, 93, 93, 93
+
 
 app = QtWidgets.QApplication([])
 ui = uic.loadUi("form.ui")
@@ -35,15 +56,32 @@ def onClose():
     serial.close()
 
 
+# Считываем данные из lineEdit в serialData
+def prepare_data():
+    for i in range(0, 6):
+        serialData[i] = int(linedits[i].text())
+
+
+def print_data_2_send():
+    message = "Current data for Robot : "
+    for i in range(0, 6):
+        message += str(serialData[i])
+        message += ", "
+    print(message)
+
+
+
+
 def onClamp():
     # data = [0x55, 0x22]
     # tx = str(data)
     # data = "A"
-    data = [93, 93, 93, 45, 45, 93]
-    for i in range(0, 6):
-        linedits[i].setText(str(data[i]))
-
-    #  SerialSend(data)
+    # data = [93, 93, 93, 45, 45, 93]
+    # for i in range(0, 6):
+        # linedits[i].setText(str(data[i]))
+    linedits[0].setText("45")
+    serialData[0] = int(linedits[0].text())
+    SerialSend(data)
 
 
 def onStandUP():
@@ -54,6 +92,46 @@ def onStandUP():
     for i in range(0, 6):
         linedits[i].setText(str(data[i]))
     # SerialSend(data)
+
+
+def onGetBox():
+    for i in range(0, 6):
+        linedits[i].setText(str(ready_to_catch[i]))
+    prepare_data()
+    SerialSend(serialData)  # Go to down position
+    # Надо дождаться выполнения
+    # wait for robot finish
+    release_clamp() # Захват открывается одновременно с движением робота.
+    for i in range(0, 6):
+        linedits[i].setText(str(catch_box[i]))
+    prepare_data()
+    SerialSend(serialData) # make catch_box
+
+    for i in range(0, 6):
+        linedits[i].setText(str(ready_to_catch[i]))
+    prepare_data()
+    SerialSend(serialData)
+    for i in range(0, 6):
+        linedits[i].setText(str(hwr_Start_position[i]))
+    prepare_data()
+    print_data_2_send()
+    SerialSend(serialData)
+
+
+
+# Копируем фикс. данные позиции в текстровые окна
+def onSitPosition():  # sit_down_position
+    for i in range(0, 6):
+        linedits[i].setText(str(sit_down_position[i]))
+    for i in range(0, 6):
+        serialData[i] = int(linedits[i].text())
+    SerialSend(serialData)
+
+
+def release_clamp():
+    linedits[0].setText("45")
+    prepare_data()
+    SerialSend(serialData)
 
 
 def onSetPosition():
@@ -70,6 +148,7 @@ def SerialSend(data):  # список инт
         txs += ','
     txs = txs[:-1]
     txs += ';'
+    # txs = ','.join(str(data)) + ';'
     print(txs)
     serial.write(txs.encode())
 
@@ -130,25 +209,13 @@ ui.closeButton.clicked.connect(onClose)
 ui.clampButton.clicked.connect(onClamp)
 ui.stand_upButton.clicked.connect(onStandUP)
 ui.set_posButton.clicked.connect(onSetPosition)
+ui.sitButton.clicked.connect(onSitPosition)
+ui.getBoxButton.clicked.connect(onGetBox)
 
 linedits = [ui.servo_1_lineEdit, ui.servo_2_lineEdit, ui.servo_3_lineEdit, ui.servo_4_lineEdit,
             ui.servo_5_lineEdit, ui.servo_6_lineEdit]
-# linedits.append(ui.servo_1_lineEdit)
-# linedits.append(ui.servo_2_lineEdit)
-# linedits.append(ui.servo_3_lineEdit)
-# linedits.append(ui.servo_4_lineEdit)
-# linedits.append(ui.servo_5_lineEdit)
-# linedits.append(ui.servo_6_lineEdit)
 
-# serialData = []
-# serialData.append(int(ui.servo_1_lineEdit.text()))
-# serialData.append(int(ui.servo_2_lineEdit.text()))
-# serialData.append(int(ui.servo_3_lineEdit.text()))
-# serialData.append(int(ui.servo_4_lineEdit.text()))
-# serialData.append(int(ui.servo_5_lineEdit.text()))
-# serialData.append(int(ui.servo_6_lineEdit.text()))
-
-# Создаем массив данных для   ОТАРВКИ в порт
+# Создаем массив данных для   ОТПРАВКИ в порт
 serialData = [int(ui.servo_1_lineEdit.text()), int(ui.servo_2_lineEdit.text()), int(ui.servo_3_lineEdit.text()),
               int(ui.servo_4_lineEdit.text()), int(ui.servo_5_lineEdit.text()), int(ui.servo_6_lineEdit.text())]
 

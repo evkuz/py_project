@@ -4,3 +4,11 @@
 !*.*
 nano_serial/.idea*
 nano_serial/nano_serial*
+
+!nano_parsing*
+!nano_parsing/*
+!nano_parsing/*.*
+nano_parsing/.idea*
+nano_parsing/venv
+
+
