@@ -429,7 +429,7 @@
     <string>Horse-2</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="get_putBoxButton">
+  <widget class="QPushButton" name="put_getBoxButton">
    <property name="geometry">
     <rect>
      <x>600</x>
@@ -439,7 +439,20 @@
     </rect>
    </property>
    <property name="text">
-    <string>Get + PUT Box</string>
+    <string>PUT + GET Box</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="combSitStandButton">
+   <property name="geometry">
+    <rect>
+     <x>600</x>
+     <y>320</y>
+     <width>131</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>SIT + Stand UP</string>
    </property>
   </widget>
  </widget>

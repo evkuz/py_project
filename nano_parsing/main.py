@@ -7,7 +7,8 @@ import sys
 
 import time
 
-# /*Координаты начальной/стартовой позиции*/
+SerialSPEED = 115200
+# /* Фиксированные позиции*/
 hwr_Start_position = [93, 93, 93, 93, 93, 93]  # ; // servo1,,,servo6
 sit_down_position = [93, 93, 93, 48, 48, 93]  # ; // Поза сидя. Сдвинуты 4,5 приводы (относительно 93)
 horse_position = [93, 93, 0, 48, 48, 93]  # ;
@@ -20,7 +21,7 @@ horse_2 = [93, 93, 1, 11, 21, 137]
 
 ready_to_catch_2 = [93, 93, 0, 27, 117, 51]
 catch_box_2 = [80, 93, 11, 11, 117, 51]
-ready_to_put_box_2 = [93, 93, 0, 4, 98, 175]
+ready_to_put_box_2 = [80, 93, 0, 4, 98, 175]
 put_box_2 = [45, 93, 0, 7, 113, 180]
 catch_box_3 = [80, 93, 0, 7, 113, 180]
 
@@ -32,7 +33,7 @@ ui = uic.loadUi("form.ui")
 ui.setWindowTitle("SerialGUI")
 
 serial = QSerialPort()
-serial.setBaudRate(115200)
+serial.setBaudRate(SerialSPEED)
 portList = []
 ports = QSerialPortInfo().availablePorts()
 for port in ports:
@@ -78,10 +79,14 @@ def print_data_2_send():
 
 
 def onClamp():
-    linedits[0].setText("45")
+    if linedits[0].text() == "93" or linedits[0].text() == "80":
+        linedits[0].setText("45")
+    else:
+        linedits[0].setText("93")
+
     serialData[0] = int(linedits[0].text())
     SerialSend(serialData)
-    updateSliders()
+    # updateSliders()
 
 
 def onStandUP():
@@ -93,15 +98,15 @@ def onStandUP():
 
 def onGetBox():
     for i in range(0, 6):
-        linedits[i].setText(str(ready_to_catch_2[i])) # Встаем в позу перед захватом
+        linedits[i].setText(str(ready_to_catch_2[i]))  # Встаем в позу перед захватом
     prepare_data()
     SerialSend(serialData)  # Go to down position
-    #updateSliders()
+    # updateSliders()
     # Надо дождаться выполнения
     # wait for robot finish
     release_clamp()  # Открываем Захват
     # onClamp()
-    #prepare_data()
+    # prepare_data()
     # updateSliders()
     # # Делаем захват
     for i in range(0, 6):
@@ -110,57 +115,51 @@ def onGetBox():
     SerialSend(serialData)  # make catch_box
     # # Встаем в позу перед захватом
     for i in range(0, 6):
-        linedits[i].setText(str(ready_to_catch_[i]))
+        linedits[i].setText(str(ready_to_catch[i]))
     prepare_data()
     SerialSend(serialData)
-    # # Возврат на исходную
+    # Возврат на исходную
     for i in range(0, 6):
         linedits[i].setText(str(hwr_Start_position[i]))
     prepare_data()
-    # # print_data_2_send()
+    # print_data_2_send()
     SerialSend(serialData)
+
 
 # =============================================================
 
 
 def onPut_GetBox():
-    for i in range(0, 6):
-        linedits[i].setText(str(ready_to_catch_2[i])) # Встаем в позу перед захватом
-    prepare_data()
-    SerialSend(serialData)  # Go to down position
-    #updateSliders()
+    GoToPosition(ready_to_catch_2)  # Go to down position
+    # updateSliders()
     # Надо дождаться выполнения
     # wait for robot finish
+    time.sleep(2)
     release_clamp()  # Открываем Захват
-    # onClamp()
-    #prepare_data()
     # updateSliders()
-    # # Делаем захват
-    for i in range(0, 6):
-        linedits[i].setText(str(catch_box_2[i]))
-    prepare_data()
-    SerialSend(serialData)  # make catch_box
-    # # Встаем в позу перед захватом
-    for i in range(0, 6):
-        linedits[i].setText(str(sit_down_position[i]))
-    prepare_data()
-    SerialSend(serialData)
+    time.sleep(2)
+    GoToPosition(catch_box_2)  # Делаем захват
+    time.sleep(2)
+    GoToPosition(ready_to_catch_2) # Встаем в позу перед захватом
+    time.sleep(2)
+    #
+    GoToPosition(sit_down_position) # Промежуточная позиция, чтобы пройти через верх
+    time.sleep(3)
     # # Возврат на исходную
-    for i in range(0, 6):
-        linedits[i].setText(str(put_box_2[i]))
-    prepare_data()
-    # # print_data_2_send()
-    SerialSend(serialData)
+    GoToPosition(ready_to_put_box_2) # Позиция перед установкой на место
+    time.sleep(2)
+    # Теперь кладем на место
+    GoToPosition(put_box_2)
+    time.sleep(2)
+    GoToPosition(ready_to_put_box_2) # Вернулись в позицию перед установкой на место
+    time.sleep(2)
+    # Возврат на исходную
+    GoToPosition(hwr_Start_position)
 
 
 # Копируем фикс. данные позиции в текстровые окна
 def onSitPosition():  # sit_down_position
-    for i in range(0, 6):
-        linedits[i].setText(str(sit_down_position[i]))
-        prepare_data()
-    # for i in range(0, 6):
-    #     serialData[i] = int(linedits[i].text())
-    #SerialSend(serialData)
+    GoToPosition(sit_down_position)
     updateSliders()
 
 
@@ -175,8 +174,8 @@ def onSetPosition():
     for i in range(0, 6):
         serialData[i] = int(linedits[i].text())
         # print(serialData[i])
-    # SerialSend(serialData)
-    updateSliders()
+    SerialSend(serialData)
+    # updateSliders()
 
 
 def SerialSend(data):  # список инт
@@ -193,6 +192,9 @@ def SerialSend(data):  # список инт
     qbdata = QByteArray(QByteArray.fromRawData(dd))
     # serial.clear()
     tx = serial.writeData(qbdata)
+    while not serial.waitForBytesWritten():
+        pass
+    print("All bytes are written")
 
 
 # Обработка сигнала textChanged
@@ -281,22 +283,33 @@ def updateSliders():
 
 
 def onHorse_1_Button():
-    for i in range(0, 6):
-        linedits[i].setText(str(horse_1[i]))
-    prepare_data()
-    SerialSend(serialData)
+    GoToPosition(horse_1)
     updateSliders()
 
 
 def onHorse_2_Button():
-    for i in range(0, 6):
-        linedits[i].setText(str(horse_2[i]))
-    prepare_data()
-    SerialSend(serialData)
+    GoToPosition(horse_2)
     updateSliders()
 
 
+def onCombButton():
+    # onSitPosition()
+    GoToPosition(sit_down_position)
+    # Тут нужна пауза
+    time.sleep(3)
+    # onStandUP()
+    GoToPosition(hwr_Start_position)
+
+
+def GoToPosition(pos):
+    for i in range(0, 6):
+        linedits[i].setText(str(pos[i]))  # Делаем захват, т.е. чуть опускаемся и закрываем захват
+    prepare_data()
+    SerialSend(serialData)  # make catch_box
+
+
 serial.readyRead.connect(onRead)
+# serial.bytesWritten.connect(onBytesWritten)
 ui.openButton.clicked.connect(onOpen)
 ui.closeButton.clicked.connect(onClose)
 ui.clampButton.clicked.connect(onClamp)
@@ -304,10 +317,11 @@ ui.stand_upButton.clicked.connect(onStandUP)
 ui.set_posButton.clicked.connect(onSetPosition)
 ui.sitButton.clicked.connect(onSitPosition)
 ui.getBoxButton.clicked.connect(onGetBox)
+ui.combSitStandButton.clicked.connect(onCombButton)
 # ==================================
 ui.horse_1_Button.clicked.connect(onHorse_1_Button)
 ui.horse_2_Button.clicked.connect(onHorse_2_Button)
-ui.get_putBoxButton.clicked.connect(onPut_GetBox)
+ui.put_getBoxButton.clicked.connect(onPut_GetBox)
 # =============== Slider group
 ui.S1_verSlider.valueChanged.connect(onS1_Slider)
 ui.S2_verSlider.valueChanged.connect(onS2_Slider)
@@ -338,7 +352,6 @@ ui.servo_1_lineEdit.editingFinished.connect(S1_data_changed)
 # ui.servo_4_lineEdit.editingFinished.connect(S4_data_changed)
 # ui.servo_5_lineEdit.editingFinished.connect(S5_data_changed)
 # ui.servo_6_lineEdit.editingFinished.connect(S6_data_changed)
-
 
 
 ui.show()
