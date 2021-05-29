@@ -134,27 +134,39 @@ def onPut_GetBox():
     # updateSliders()
     # Надо дождаться выполнения
     # wait for robot finish
+    print("wait 2 seconds")
     time.sleep(2)
     release_clamp()  # Открываем Захват
     # updateSliders()
+    print("wait 2 seconds")
     time.sleep(2)
     GoToPosition(catch_box_2)  # Делаем захват
+    print("wait 2 seconds")
     time.sleep(2)
-    GoToPosition(ready_to_catch_2) # Встаем в позу перед захватом
+    GoToPosition(ready_to_catch_2)  # Возврат в позу перед захватом
+    print("wait 2 seconds")
     time.sleep(2)
     #
-    GoToPosition(sit_down_position) # Промежуточная позиция, чтобы пройти через верх
+    GoToPosition(sit_down_position)  # Промежуточная позиция, чтобы пройти через верх
+    print("wait 3 seconds")
     time.sleep(3)
     # # Возврат на исходную
-    GoToPosition(ready_to_put_box_2) # Позиция перед установкой на место
+    GoToPosition(ready_to_put_box_2)  # Позиция перед установкой на место
+    print("wait 2 seconds")
+    time.sleep(2)
+    release_clamp()  # Открываем Захват
+    print("wait 2 seconds")
     time.sleep(2)
     # Теперь кладем на место
     GoToPosition(put_box_2)
+    print("wait 2 seconds")
     time.sleep(2)
     GoToPosition(ready_to_put_box_2) # Вернулись в позицию перед установкой на место
+    print("wait 2 seconds")
     time.sleep(2)
     # Возврат на исходную
     GoToPosition(hwr_Start_position)
+    print("Done !")
 
 
 # Копируем фикс. данные позиции в текстровые окна
@@ -194,6 +206,7 @@ def SerialSend(data):  # список инт
     tx = serial.writeData(qbdata)
     while not serial.waitForBytesWritten():
         pass
+    serial.flush()
     print("All bytes are written")
 
 
@@ -295,6 +308,7 @@ def onHorse_2_Button():
 def onCombButton():
     # onSitPosition()
     GoToPosition(sit_down_position)
+    print("wait 3 seconds")
     # Тут нужна пауза
     time.sleep(3)
     # onStandUP()
