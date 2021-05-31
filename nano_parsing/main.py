@@ -9,7 +9,8 @@ import time
 SerialSPEED = 115200
 # /* Фиксированные позиции*/
 hwr_Start_position = [93, 93, 93, 93, 93, 93]  # ; // servo1,,,servo6
-sit_down_position = [93, 93, 93, 48, 48, 93]  # ; // Поза сидя. Сдвинуты 4,5 приводы (относительно 93)
+sit_down_position = [93, 93, 93, 48, 48, 93]  # ; // Поза сидя. Сдвинуты 4,5
+# // приводы (относительно 93)
 horse_position = [93, 93, 0, 48, 48, 93]  # ;
 horse_mirror_position = [45, 93, 180, 135, 135, 93]  # ;
 ready_to_catch = [93, 93, 2, 15, 110, 93]  # ;
@@ -47,8 +48,9 @@ def onRead():
     if not serial.canReadLine():
         return  # выходим если нечего читать
     global cameFrom
-    cameFrom = True  # Сигналим, что данные пришли
     rx = serial.readLine()
+    cameFrom = True  # Сигналим, что данные пришли
+
     # rxs = str(rx, 'utf-8').strip()  # Данные в бинарном виде.
     # data = rxs.split(',')
     print(rx)
@@ -194,6 +196,7 @@ def onSetPosition():
 
 
 def SerialSend(data):  # список инт
+    global cameFrom
     txs = ""
     for val in data:
         txs += str(val)
@@ -207,13 +210,21 @@ def SerialSend(data):  # список инт
     qbdata = QByteArray(QByteArray.fromRawData(dd))
     # serial.clear()
     tx = serial.writeData(qbdata)
-    while not serial.waitForBytesWritten():
-        pass
+    # print("there are " + str(tx) + " bytes written to robot")
+    print("Camefrom BEFORE sending ")
+    print(cameFrom)
+    # Цикл ни разу не срабатывает
+    # while not serial.waitForBytesWritten():
+    #     pass
+    #     print("kek")
     serial.flush()
     print("All bytes are written")
-    global cameFrom
+    print("Camefrom AFTER sending ")
+    print(cameFrom)
+
     while not cameFrom:
         pass  # Ждем ответа от Робота
+        # print("lol")
     cameFrom = False
 
 
@@ -313,7 +324,9 @@ def onHorse_2_Button():
 
 
 def onCombButton():
+    global cameFrom
     # onSitPosition()
+    cameFrom = False
     GoToPosition(sit_down_position)
     print("wait 3 seconds")
     # Тут нужна пауза
