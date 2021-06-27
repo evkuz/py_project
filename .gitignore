@@ -11,4 +11,8 @@ nano_serial/nano_serial*
 nano_parsing/.idea*
 nano_parsing/venv
 
+!neural_01*
+!neural_01/*.*
+!neural_01/.idea*
+!neural_01/venv
 
