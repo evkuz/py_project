@@ -102,7 +102,7 @@ if __name__ == '__main__':
     print("Our neural output :")
     print(n.query([1.0, 0.5, -1.5]))
     # try images mnist_train_100.csv
-    data_file = open("/home/evkuz/lit/mnist/mnist")
+    data_file = open("/home/evkuz/lit/mnist/mnist_train_100.csv")
     data_list = data_file.readlines()
     data_file.close()
     print(len(data_list))
