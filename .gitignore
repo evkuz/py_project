@@ -11,8 +11,17 @@ nano_serial/nano_serial*
 nano_parsing/.idea*
 nano_parsing/venv
 
+!just_serial/
+!just_serial/*.*
+!just_serial/*.txt
+
+#!skeleton*
+!skeleton/
+!skeleton/*.*
+
 !neural_01*
 !neural_01/*.*
 !neural_01/.idea*
 !neural_01/venv
+
 
