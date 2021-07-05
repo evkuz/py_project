@@ -211,21 +211,21 @@ def SerialSend(data):  # список инт
     # serial.clear()
     tx = serial.writeData(qbdata)
     # print("there are " + str(tx) + " bytes written to robot")
-    print("Camefrom BEFORE sending ")
-    print(cameFrom)
+    # print("Camefrom BEFORE sending ")
+    # print(cameFrom)
     # Цикл ни разу не срабатывает
     # while not serial.waitForBytesWritten():
     #     pass
     #     print("kek")
     serial.flush()
-    print("All bytes are written")
-    print("Camefrom AFTER sending ")
-    print(cameFrom)
+    # print("All bytes are written")
+    # print("Camefrom AFTER sending ")
+    # print(cameFrom)
 
-    while not cameFrom:
-        pass  # Ждем ответа от Робота
-        # print("lol")
-    cameFrom = False
+    # while not cameFrom:
+    #     pass  # Ждем ответа от Робота
+    #     # print("lol")
+    # cameFrom = False
 
 
 # Обработка сигнала textChanged
