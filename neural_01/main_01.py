@@ -1,16 +1,18 @@
 # This is a sample Python based neural network example
 # The source code can be found here
 # https://github.com/makeyourownneuralnetwork/makeyourownneuralnetwork/find/master
-
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# Мы обучили нашу нейронную сеть и добились того, что она смогла определить цифру,
+# предоставленную ей в виде изображения.
+# Помним, что до этого сеть не сталкивалась с данным изображением, поскольку оно не входило
+# в тренировочный набор данных.
+# Это важно - разделять тренировочный и тестовый наборы данных.
 
 import numpy
 import matplotlib.pyplot as plt
 
 # библиотека scipy.special содержит сигмоиду expit()
 import scipy.special
+import csv
 
 
 class neuralNetwork:
@@ -138,8 +140,7 @@ if __name__ == '__main__':
     plt.imshow(image_array, cmap='Greys',interpolation='None')
     plt.show()
 
-
-    # ==================================== А теперь тестим сеть - скармливаем тестовые данные =======================
+    # ==================================== А теперь тестим сеть - Сначала обучаем =====================
     # ДО этой строки просто выводили массив чисел 28x28 в цвете.
     # Каждый эл-т массива - это численное значение цвета пикселя,
     # и таких пиксерелей - 28х28 штук.
@@ -151,30 +152,35 @@ if __name__ == '__main__':
     # создать экземпляр нейронной сети
     n = neuralNetwork(input_nodes, hidden_nodes, output_nodes, learning_rate)
 
+    # загрузить в список тренировочный набор данных CSV-файла набора MNIST
+    # training_data_file = open("/home/evkuz/lit/mnist/mnist_train_100.csv", newline='', encoding='utf-8')
+    # training_data_list = training_data_file.readlines()
+    # training_data_file.close()
 
-
-    # загрузить в список тестовый набор данных CSV-файла набора MNIST
-    training_data_file = open("/home/evkuz/lit/mnist/mnist_train_100.csv")
-    training_data_list = training_data_file.readlines()
-    training_data_file.close()
-
-    # ==================================== тренировка нейронной сети
-
-    # перебрать все записи в тренировочном наборе данных
-    for record in training_data_list:
-        # получить список значений, используя символы запятой (1,1)
-        # в качестве разделителей
-        all_values = record.split(',')
-        print(all_values)
-        # масштабировать и сместить входные значения
-        inputs = (numpy.asfarray(all_values[1:]) / 255.0 * 0.99) + 0.01
-        # создать целевые выходные значения (все равны 0,01, за исключением
-        # желаемого маркерного значения, равного 0,99)
-        targets = numpy.zeros(output_nodes) + 0.01
-        # all_values[0] - целевое маркерное значение для данной записи
-        targets[int(all_values[0])] = 0.99
-        n.train(inputs, targets)
-        pass
-
+    with open("/home/evkuz/lit/mnist/mnist_train_100.csv", newline='') as training_data_file:
+        training_data_list = csv.reader(training_data_file, delimiter=' ', quotechar='|')
+        # ==================================== тренировка нейронной сети
+        # перебрать все записи в тренировочном наборе данных
+        for record in training_data_list:
+            # получить список значений, используя символы запятой (1,1)
+            # в качестве разделителей
+            # all_values = record.split(',')
+            # print(all_values)
+            # масштабировать и сместить входные значения
+            inputs = (numpy.asfarray(all_values[1:]) / 255.0 * 0.99) + 0.01
+            # создать целевые выходные значения (все равны 0,01, за исключением
+            # желаемого маркерного значения, равного 0,99)
+            targets = numpy.zeros(output_nodes) + 0.01
+            # all_values[0] - целевое маркерное значение для данной записи
+            targets[int(all_values[0])] = 0.99
+            # Запускаем обучение сети
+            n.train(inputs, targets)
+            pass
+    # ========================= теперь делаем запрос к ней. Отправляем одну запись из тестового набора данных
+    # Ответ сети - список чисел, являющихся выходными значениями каждого из выходных узлов.
+    # Видим, что максимально значение ответа приходится на число 7 - это 8-й
+    # символ в массиве чисел [0-9]
+    # Как видим, в качестве маркера первой записи тестового набора
+    # сеть определила символ “7” . Именно этого ответа мы ожидали
     print(n.query(numpy.asfarray(all_values[1:]) / 255.0 * 0.99) + 0.01)
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
