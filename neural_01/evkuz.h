@@ -1,4 +1,21 @@
 /*
+
+05-06.07.2021
+
+При загрузка mnist-файла с тестовыми данными получаю ошибку :
+ValueError: could not convert string to float: ''
+Это руками сделанный файл mnist_train_100.csv, и у него для каждой строки последний символ выглядит как '0\n'
+Вот на это он и ругается.
+
+ПРобовал открыть файл так :
+training_data_file = open("/home/evkuz/lit/mnist/mnist_train_100.csv", newline='', encoding='utf-8')
+Не помогает.
+
+Решил через :
+    with open("/home/evkuz/lit/mnist/mnist_train_100.csv", newline='') as training_data_file:
+        training_data_list = csv.reader(training_data_file, delimiter=' ', quotechar='|')
+
+#############################
 28.06.2021
 Подключаем нейронную сеть для распознавания изображений рукописных цифр.
 Делаем все по этой книге 
