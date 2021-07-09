@@ -1,11 +1,33 @@
 # This is a sample Python based neural network example
 # The source code can be found here
 # https://github.com/makeyourownneuralnetwork/makeyourownneuralnetwork/find/master
+
+# //+++++++++++++++++++++++++++++++
+# main_04
+# Тренировка и тестирование нейронной сети с использованием полной базы данных
+# Размер scorecard :  10000
+# эффективность =  0.9429
+# Т.е. мы сделали 10000 запросов в сеть после обучения на 60000 изображений, и правильный результат
+# был получен в 94% случаев !!!
+
+# //+++++++++++++++++++++++++++++++
+# main_03
+# Задача - проверить, насколько хорошо нейронная сеть справляется с остальной частью набора данных,
+# и провести подсчет правильных результатов, чтобы впоследствии мы могли оценивать плодотворность
+# своих будущих идей по совершенствованию способности сети обучаться.
+# Доля правильных результатов составила 50%
+
+# //+++++++++++++++++++++++++++++++
+# main_02
 # Мы обучили нашу нейронную сеть и добились того, что она смогла определить цифру,
 # предоставленную ей в виде изображения.
 # Помним, что до этого сеть не сталкивалась с данным изображением, поскольку оно не входило
 # в тренировочный набор данных.
 # Это важно - разделять тренировочный и тестовый наборы данных.
+# !!!!!!!!!!!!!!!!!!!! ВАЖНО !!!!!!!!!!!!!!!!!!!!
+# Пример кода из книги не работает в PyCharm из-за csv формата.
+# Поэтмоу пришлось применить модуль csv,  и, соответственно, код отличается от книжного.
+
 
 import numpy
 import matplotlib.pyplot as plt
@@ -29,12 +51,12 @@ class neuralNetwork:
         # w12 w22 и т.д.
         self.wih = numpy.random.normal(0.0, pow(self.hnodes, -0.5), (self.hnodes, self.inodes))
         self.who = numpy.random.normal(0.0, pow(self.onodes, -0.5), (self.onodes, self.hnodes))
+
         # коэффициент обучения
         self.lr = learningrate
 
         # использование сигмоиды в качестве функции активации
         self.activation_function = lambda x: scipy.special.expit(x)
-        pass
 
     # Обучение, тренировака сети
     def train(self, inputs_list, targets_list):
@@ -70,7 +92,6 @@ class neuralNetwork:
         # обновить весовые коэффициенты для связей между входным и скрытым слоями
         self.wih += self.lr * numpy.dot((hidden_errors * hidden_outputs * (1.0 - hidden_outputs)),
                                         numpy.transpose(inputs))
-        pass
 
     # Опрос сети
     def query(self, inputs_list):
@@ -88,14 +109,8 @@ class neuralNetwork:
         return final_outputs
 
 
-# def print_hi(name):
-#     # Use a breakpoint in the code line below to debug your script.
-#     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # print_hi('PyCharm')
     # количество входных, скрытых и выходных узлов
     input_nodes = 3
     hidden_nodes = 3
@@ -109,37 +124,7 @@ if __name__ == '__main__':
     print(arr)
     print("Our neural output :")
     print(n.query([1.0, 0.5, -1.5]))
-    # ================================ Берем из файла ТРЕНИРОВОЧНЫЕ (100) данные, выводим 1 элемент массива данных
-    # try images mnist_train_100.csv
-    train_data_file = open("/home/evkuz/lit/mnist/mnist_train_100.csv")
-    train_data_list = train_data_file.readlines()
-    train_data_file.close()
-    print(len(train_data_list))
-    print(train_data_list[1])
-    # А теперь выводим одно из ТРЕНИРОВОЧНЫХ изображений, это "0"
-    all_values = train_data_list[1].split(',')
-    image_array = numpy.asfarray(all_values[1:]).reshape((28, 28))
-    plt.imshow(image_array, cmap='Greys',interpolation='None')
-    plt.show()
-
-    # ================================ Берем из файла ТЕСТОВЫЕ данные (10), выводим 1 элемент массива данных \
-    # для проверки
-    # try images mnist_train_100.csv
-    test_data_file = open("/home/evkuz/lit/mnist/mnist_test_10.csv")
-    test_data_list = test_data_file.readlines()
-    test_data_file.close()
-    # Выводим количество элементов в списке
-    print(len(test_data_list))
-    # Выводим первый элемент списка - изображение числа 7
-    print(test_data_list[0])
-    # А теперь выводим одно из ТЕСТОВЫХ изображений, это "7"
-    all_values = test_data_list[0].split(',')
-    # выводим маркер - это "7"
-    print(all_values[0])
-    image_array = numpy.asfarray(all_values[1:]).reshape((28, 28))
-    plt.imshow(image_array, cmap='Greys',interpolation='None')
-    plt.show()
-
+    # =============================== Используем полный набор данных для работы сети ==================
     # ==================================== А теперь тестим сеть - Сначала обучаем =====================
     # ДО этой строки просто выводили массив чисел 28x28 в цвете.
     # Каждый эл-т массива - это численное значение цвета пикселя,
@@ -152,35 +137,72 @@ if __name__ == '__main__':
     # создать экземпляр нейронной сети
     n = neuralNetwork(input_nodes, hidden_nodes, output_nodes, learning_rate)
 
-    # загрузить в список тренировочный набор данных CSV-файла набора MNIST
-    # training_data_file = open("/home/evkuz/lit/mnist/mnist_train_100.csv", newline='', encoding='utf-8')
-    # training_data_list = training_data_file.readlines()
-    # training_data_file.close()
+    # print("It's wih", n.wih)
+    # print("It's who", n.who)
 
-    with open("/home/evkuz/lit/mnist/mnist_train_100.csv", newline='') as training_data_file:
-        training_data_list = csv.reader(training_data_file, delimiter=' ', quotechar='|')
+
+    # загрузить в список тренировочный набор данных - ПОЛНЫЙ - CSV-файла набора MNIST
+    with open("/home/evkuz/lit/mnist/mnist_train.csv", newline='') as training_data_file:
+        training_data_list = csv.reader(training_data_file, delimiter=',', quotechar='|')
         # ==================================== тренировка нейронной сети
         # перебрать все записи в тренировочном наборе данных
         for record in training_data_list:
             # получить список значений, используя символы запятой (1,1)
             # в качестве разделителей
-            # all_values = record.split(',')
-            # print(all_values)
             # масштабировать и сместить входные значения
-            inputs = (numpy.asfarray(all_values[1:]) / 255.0 * 0.99) + 0.01
+            inputs = (numpy.asfarray(record[1:]) / 255.0 * 0.99) + 0.01
             # создать целевые выходные значения (все равны 0,01, за исключением
             # желаемого маркерного значения, равного 0,99)
             targets = numpy.zeros(output_nodes) + 0.01
             # all_values[0] - целевое маркерное значение для данной записи
-            targets[int(all_values[0])] = 0.99
+            targets[int(record[0])] = 0.99
             # Запускаем обучение сети
             n.train(inputs, targets)
             pass
-    # ========================= теперь делаем запрос к ней. Отправляем одну запись из тестового набора данных
-    # Ответ сети - список чисел, являющихся выходными значениями каждого из выходных узлов.
-    # Видим, что максимально значение ответа приходится на число 7 - это 8-й
-    # символ в массиве чисел [0-9]
-    # Как видим, в качестве маркера первой записи тестового набора
-    # сеть определила символ “7” . Именно этого ответа мы ожидали
-    print(n.query(numpy.asfarray(all_values[1:]) / 255.0 * 0.99) + 0.01)
+    # Делаем запрос в сеть из ПОЛНОГО тестового набора
+    with open("/home/evkuz/lit/mnist/mnist_test.csv", newline='') as test_data_file:
+        test_data_list = csv.reader(test_data_file, delimiter=',', quotechar='|')
+        # ==================================== тренировка нейронной сети
+        # перебрать все записи в тренировочном наборе данных
+
+        # журнал оценок работы сети, первоначально пустой
+        scorecard = []
+        for record in test_data_list:
+            # правильный ответ - первое значение
+            correct_label = int(record[0])
+            # print(correct_label, "истинный маркер")
+            # масштабировать и сместить входные значения
+            inputs = (numpy.asfarray(record[1:]) / 255.0 * 0.99) + 0.01
+            # опрос сети
+            outputs = n.query(inputs)
+            # индекс наибольшего значения является маркерным значением
+            label = numpy.argmax(outputs)
+            # print(label, "ответ сети")
+            # присоединить оценку ответа сети к концу списка
+            if label == correct_label:
+                # в случае правильного ответа сети присоединить
+                # к списку значение 1
+                scorecard.append(1)
+            else:
+                # в случае неправильного ответа сети присоединить
+                # к списку значение 0
+                scorecard.append(0)
+                pass
+        pass
+    # print(scorecard)
+    with open('/home/evkuz/py_project/neural_01/ek_neuron.txt', 'w') as f:
+        for item in n.wih:
+            f.write("%s\n" % item)
+        f.write("###############################################################################\n")
+
+        for item in n.who:
+            f.write("%s\n" % item)
+
+    # рассчитать показатель эффективности в виде доли правильных ответов
+    scorecard_array = numpy.asarray(scorecard)
+    print("Размер scorecard : ", scorecard_array.size)
+    print("эффективность = ", scorecard_array.sum()/scorecard_array.size)
+
+
+
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

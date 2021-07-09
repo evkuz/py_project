@@ -137,8 +137,9 @@ if __name__ == '__main__':
     # создать экземпляр нейронной сети
     n = neuralNetwork(input_nodes, hidden_nodes, output_nodes, learning_rate)
 
+    print("It's wih", n.wih)
+    print("It's who", n.who)
     # загрузить в список тренировочный набор данных - ПОЛНЫЙ - CSV-файла набора MNIST
-
     with open("/home/evkuz/lit/mnist/mnist_train.csv", newline='') as training_data_file:
         training_data_list = csv.reader(training_data_file, delimiter=',', quotechar='|')
         # ==================================== тренировка нейронной сети
