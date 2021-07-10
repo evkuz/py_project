@@ -191,4 +191,13 @@ for e in range(epochs):
     # calculate the performance score, the fraction of correct answers
     scorecard_array = numpy.asarray(scorecard)
     print("performance = ", scorecard_array.sum() / scorecard_array.size)
+    with open('/home/evkuz/PycharmProjects/py_project/neural_01/ek_neuron.txt', 'w') as f:
+        for item in n.wih:
+            f.write("%s\n" % item)
+        f.write("###############################################################################\n")
+
+        for item in n.who:
+            f.write("%s\n" % item)
+        f.write("performance = %s\n" % scorecard_array.sum() / scorecard_array.size)
+
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
