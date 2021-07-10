@@ -1,4 +1,5 @@
-#
+# $USER_HOME$: stands for your home directory.
+# $PROJECT_DIR$: stands for the directory where your project is stored
 #
 #
 #

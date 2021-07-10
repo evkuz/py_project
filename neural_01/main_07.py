@@ -4,6 +4,14 @@
 
 # //+++++++++++++++++++++++++++++++
 # main_07
+# Сохраняем весовые коэффициенты слоев в файл. И когда получим сеть с высокой степенью распознавания (>97.0%)
+# То просто сохраним эти коэффициенты и не надо будет каждый раз обучать сеть перед распознаванием изображения.
+# Имя файла ek_neuron.txt. ПРичем путь должен быть абсолютный.
+# Массивы весовых коэффициентов разделены в файле строкой '########################################'
+# Чтобы узнать номер строки из shell : sed -n '/#################.*/=' ek_neuron.txt
+# 19471
+#
+# Чтобы в less перейти на нужный номер строки набираем ng - где n - номер строки.
 # Улучшаем дальше. Пробуем увеличение количества узлов
 # Узлов : 200 Коэффициент обучения : 0.1 эффективность = 0.9584 Прогонов 4
 # Узлов : 200 Коэффициент обучения : 0.1 эффективность = 0.9593 Прогонов 5
@@ -35,7 +43,15 @@
 # Узлов : 250 Коэффициент обучения : 0.097 эффективность = 0.9598 Прогонов 12
 # Узлов : 400 Коэффициент обучения : 0.097 эффективность = 0.9591 Прогонов 10
 # Узлов : 400 Коэффициент обучения : 0.1 эффективность = 0.9587 Прогонов 10
+# Узлов : 400 Коэффициент обучения : 0.1 эффективность = 0.9596 Прогонов 12
+# Узлов : 400 Коэффициент обучения : 0.1 эффективность = 0.9595 Прогонов 13
 
+# Узлов : 300 Коэффициент обучения : 0.098 эффективность = 0.9625 Прогонов 10
+# Узлов : 300 Коэффициент обучения : 0.098 эффективность = 0.9575 Прогонов 12
+# Узлов : 500 Коэффициент обучения : 0.1 эффективность = 0.9599 Прогонов 5
+
+# Узлов : 200 Коэффициент обучения : 0.1 эффективность = 0.9742 Прогонов 6
+#
 # //+++++++++++++++++++++++++++++++
 # main_06
 # Улучшаем дальше. Пробуем многократное повторение тренировочных циклов, комбинируем с коэффицентом обучения.
@@ -181,7 +197,7 @@ if __name__ == '__main__':
     # Каждый эл-т массива - это численное значение цвета пикселя,
     # и таких пиксерелей - 28х28 штук.
     input_nodes = 784
-    hidden_nodes = 400
+    hidden_nodes = 200
     output_nodes = 10
     # коэффициент обучения
     learning_rate = 0.1
@@ -192,41 +208,45 @@ if __name__ == '__main__':
     # набор данных используется для тренировки сети
 
     # загрузить в список тренировочный набор данных - ПОЛНЫЙ - CSV-файла набора MNIST
-    with open("/home/evkuz/lit/mnist/mnist_train.csv", newline='') as training_data_file:
-        training_data_list = csv.reader(training_data_file, delimiter=',', quotechar='|')
-        # ==================================== тренировка нейронной сети
-        # перебрать все записи в тренировочном наборе данных
-        epochs = 12
-        for epo in range(epochs):
-            print("Epochs value : ", epo)
-            for record in training_data_list:
-                # получить список значений, используя символы запятой (1,1)
-                # в качестве разделителей
-                # масштабировать и сместить входные значения
-                inputs = (numpy.asfarray(record[1:]) / 255.0 * 0.99) + 0.01
-                # создать целевые выходные значения (все равны 0,01, за исключением
-                # желаемого маркерного значения, равного 0,99)
-                targets = numpy.zeros(output_nodes) + 0.01
-                # all_values[0] - целевое маркерное значение для данной записи
-                targets[int(record[0])] = 0.99
-                # Запускаем обучение сети
-                n.train(inputs, targets)
-            pass
-        pass
-    # Делаем запрос в сеть из ПОЛНОГО тестового набора
-    with open("/home/evkuz/lit/mnist/mnist_test.csv", newline='') as test_data_file:
-        test_data_list = csv.reader(test_data_file, delimiter=',', quotechar='|')
-        # ==================================== тренировка нейронной сети
-        # перебрать все записи в тренировочном наборе данных
+    training_data_file = open("/home/evkuz/lit/mnist/mnist_train.csv")
+    training_data_list = training_data_file.readlines()
+    training_data_file.close()
 
-        # журнал оценок работы сети, первоначально пустой
+    epochs = 6
+    for epo in range(epochs):
+        print("Epochs value : ", epo)
+        # ==================================== тренировка нейронной сети
+        # перебрать все записи в тренировочном наборе данных
+        for record in training_data_list:
+            # получить список значений, используя символы запятой (1,1)
+            all_values = record.split(',')
+            # в качестве разделителей
+            # масштабировать и сместить входные значения
+            inputs = (numpy.asfarray(all_values[1:]) / 255.0 * 0.99) + 0.01
+            # создать целевые выходные значения (все равны 0,01, за исключением
+            # желаемого маркерного значения, равного 0,99)
+            targets = numpy.zeros(output_nodes) + 0.01
+            # all_values[0] - целевое маркерное значение для данной записи
+            targets[int(all_values[0])] = 0.99
+            # Запускаем обучение сети
+            n.train(inputs, targets)
+            pass
         scorecard = []
+        # Делаем запрос в сеть из ПОЛНОГО тестового набора
+        test_data_file = open("/home/evkuz/lit/mnist/mnist_test.csv", 'r')
+        test_data_list = test_data_file.readlines()
+        test_data_file.close()
+
+        # ==================================== тренировка нейронной сети
+        # перебрать все записи в тренировочном наборе данных
+        # журнал оценок работы сети, первоначально пустой
         for record in test_data_list:
+            all_values = record.split(',')
             # правильный ответ - первое значение
-            correct_label = int(record[0])
+            correct_label = int(all_values[0])
             # print(correct_label, "истинный маркер")
             # масштабировать и сместить входные значения
-            inputs = (numpy.asfarray(record[1:]) / 255.0 * 0.99) + 0.01
+            inputs = (numpy.asfarray(all_values[1:]) / 255.0 * 0.99) + 0.01
             # опрос сети
             outputs = n.query(inputs)
             # индекс наибольшего значения является маркерным значением
@@ -242,13 +262,28 @@ if __name__ == '__main__':
                 # к списку значение 0
                 scorecard.append(0)
                 pass
+            pass
+
+        scorecard_array = numpy.asarray(scorecard)
+        # print("Узлов :", hidden_nodes, "Коэффициент обучения :", learning_rate, "эффективность =",
+        #       scorecard_array.sum() / scorecard_array.size, "Прогонов", epochs)
+        print("эффективность =", scorecard_array.sum() / scorecard_array.size)
         pass
+    # Save weight coefficients to file
+    # lit-ubu-406 : /home/evkuz/py_project/neural_01/ek_neuron.txt
+    # x542bp : /home/evkuz/PycharmProjects/py_project/neural_01/ek_neuron.txt
+    with open('/home/evkuz/PycharmProjects/py_project/neural_01/ek_neuron.txt', 'w') as f:
+        for item in n.wih:
+            f.write("%s\n" % item)
+        f.write("###############################################################################\n")
+
+        for item in n.who:
+            f.write("%s\n" % item)
+        perf = scorecard_array.sum() / scorecard_array.size
+        f.write("!!!!!!!!!!!!!!!!!!!!!!!! performance = %s\n" % perf)
     # print(scorecard)
     # рассчитать показатель эффективности в виде доли правильных ответов
-    scorecard_array = numpy.asarray(scorecard)
-    print("Узлов :", hidden_nodes, "Коэффициент обучения :", learning_rate, "эффективность =",
-          scorecard_array.sum()/scorecard_array.size, "Прогонов", epochs)
-    # print("Коэффициент обучения : ", learning_rate)
+        # print("Коэффициент обучения : ", learning_rate)
     # print("Размер scorecard : ", scorecard_array.size)
     # print("эффективность = ", scorecard_array.sum()/scorecard_array.size)
 
