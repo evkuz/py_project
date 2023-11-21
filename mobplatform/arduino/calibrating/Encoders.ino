@@ -237,12 +237,14 @@ int gradE = E - Eprev; // dltE Наблюдаем изменение ошибк�
 
 bool dltEchangedSign=false;
 
-if ((gradE>0 && dltEprev<0) || (gradE<0 && dltEprev>0)){
-  dltEchangedSign=true;
-  
-  }
+//if ((gradE>0 && dltEprev<0) || (gradE<0 && dltEprev>0)){
+//  dltEchangedSign=true;
+//  
+//  }
 
-
+// Смена знака Е с (-) на (+)
+if (E < 0 && Eprev >0) {E_SignChanged = true;}
+if (E > 0 && Eprev <0) {E_SignChanged = true;}
 
 // Вот тут можно добавить, что если gradE < encodersGAP, это значит, что ошибка совсем мала... Но если так, то мы сюда вообще не должны попадать.
 // А вот и нет. Это не сама ошибка, а РАЗНИЦА  с прошлой ошибкой. И вот тут должна включаться инт. составляющая
@@ -280,7 +282,7 @@ else
    
     }
 
-  if (delta0 < encodersGAP) {
+  if (delta0 < encodersGAP && !E_SignChanged) {
     u=0;
     // Скорости не меняем
     }; //|| dltEchangedSign
@@ -306,8 +308,8 @@ lessSpeed += round(u);
 gtSpeed -= round(u);
 // Constrains a number to be within a range.
 
-if (lessSpeed < speedBottomLimit) {lessSpeed = speedBottomLimit;}
-if (gtSpeed > speedTopLimit) {gtSpeed = speedTopLimit;}
+if (gtSpeed < speedBottomLimit) {gtSpeed = speedBottomLimit;}
+if (lessSpeed > speedTopLimit) {lessSpeed = speedTopLimit;}
 
 *lagmSpeed = lessSpeed;//constrain(lessSpeed, speedBottomLimit, speedTopLimit);
 *fwdmSpeed = gtSpeed;//constrain(gtSpeed, speedBottomLimit, speedTopLimit); 
@@ -420,8 +422,8 @@ md.setM2Speed(m2Speed);
 
   str = "u = ";
   str += String(u,4);
-  str += " pid1stTime is ";
-  str += pidStatus;
+  str += " speedBottomLimit is ";
+  str += String(speedBottomLimit);
   str.toCharArray(data.mytext, sizeof(data.mytext));
   
 //  Serial.println("PID !!!");
@@ -436,7 +438,7 @@ md.setM2Speed(m2Speed);
   pid1stTime = true;
   Eprev = E;
   dltEprev = gradE;
-
+  E_SignChanged = false;
   
   
 

@@ -1,66 +1,96 @@
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [146, 606, 473, 182, 905]
-Average value of E on finish is 462
-E value statistics : [[-196, 260, 17], [-606, 342, -40], [-422, 643, 64], [-310, 411, 39], [-905, 759, -22]]
-E average value list : [17, -40, 64, 39, -22]
+E final values [40, 348, 20, 22, 9]
+Average value of E on finish is 88
+E value statistics : [[-54, 70, -3], [-348, 219, -60], [-22, 51, 19], [-22, 47, 1], [-49, 102, -5]]
+E average value list : [-3, -60, 19, 1, -5]
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [846, 498, 49, 317, 426]
-Average value of E on finish is 427
-E value statistics : [[-846, 514, -64], [-421, 498, 18], [-52, 49, -5], [-205, 317, 15], [-610, 386, -55]]
-E average value list : [-64, 18, -5, 15, -55]
+E final values [7, 166, 15, 29, 202]
+Average value of E on finish is 84
+E value statistics : [[-41, 60, -11], [-166, 140, 1], [-236, 246, 23], [-30, 55, -3], [-202, 176, 4]]
+E average value list : [-11, 1, 23, -3, 4]
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [86, 36, 75, 337, 47]
-Average value of E on finish is 116
-E value statistics : [[-53, 108, 7], [-264, 378, 33], [-188, 104, -18], [-243, 378, 30], [-47, 44, 3]]
-E average value list : [7, 33, -18, 30, 3]
+E final values [274, 29, 47, 49, 84]
+Average value of E on finish is 97
+E value statistics : [[-274, 182, 3], [-217, 285, 25], [-68, 112, 9], [-146, 127, -2], [-167, 190, 25]]
+E average value list : [3, 25, 9, -2, 25]
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [192, 405, 438, 563, 262]
-Average value of E on finish is 372
-E value statistics : [[-124, 192, 14], [-273, 405, 11], [-438, 308, -21], [-563, 419, -52], [-476, 343, -61]]
-E average value list : [14, 11, -21, -52, -61]
+E final values [181, 20, 140, 13, 96]
+Average value of E on finish is 90
+E value statistics : [[-181, 173, 8], [-75, 55, -5], [-181, 166, 6], [-40, 56, 9], [-118, 80, -9]]
+E average value list : [8, -5, 6, 9, -9]
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [175, 182, 428, 335, 16]
-Average value of E on finish is 227
-E value statistics : [[-354, 522, 48], [-291, 402, 37], [-332, 513, 33], [-207, 335, 12], [-304, 396, 30]]
-E average value list : [48, 37, 33, 12, 30]
+E final values [8, 138, 13, 97, 46]
+Average value of E on finish is 60
+E value statistics : [[-27, 81, 10], [-177, 156, 6], [-53, 68, 3], [-287, 282, -29], [-140, 186, 22]]
+E average value list : [10, 6, 3, -29, 22]
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [440, 359, 173, 318, 168]
-Average value of E on finish is 292
-E value statistics : [[-340, 440, 36], [-275, 390, 32], [-282, 395, 41], [-197, 318, 14], [-162, 255, 23]]
-E average value list : [36, 32, 41, 14, 23]
+E final values [61, 2, 14, 60, 61]
+Average value of E on finish is 40
+E value statistics : [[-263, 201, -37], [-35, 57, 4], [-32, 79, 14], [-101, 162, 20], [-140, 171, 20]]
+E average value list : [-37, 4, 14, 20, 20]
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [324, 636, 562, 25, 588]
-Average value of E on finish is 427
-E value statistics : [[-218, 367, 34], [-636, 479, -18], [-562, 403, -52], [-280, 427, 36], [-588, 391, -33]]
-E average value list : [34, -18, -52, 36, -33]
+E final values [40, 2, 108, 38, 3]
+Average value of E on finish is 38
+E value statistics : [[-219, 157, -27], [-45, 72, 0], [-75, 143, 13], [-38, 64, -4], [-172, 188, 13]]
+E average value list : [-27, 0, 13, -4, 13]
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [248, 389, 255, 182, 475]
-Average value of E on finish is 310
-E value statistics : [[-192, 248, 6], [-252, 389, 14], [-477, 305, -34], [-383, 428, 36], [-640, 420, -53]]
-E average value list : [6, 14, -34, 36, -53]
+E final values [35, 54, 35, 41, 42]
+Average value of E on finish is 41
+E value statistics : [[-64, 104, 10], [-54, 67, 9], [-39, 66, 10], [-211, 282, 30], [-140, 188, 22]]
+E average value list : [10, 9, 10, 30, 22]
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [530, 433, 582, 276, 233]
-Average value of E on finish is 411
-E value statistics : [[-431, 611, 44], [-433, 311, -18], [-432, 582, 42], [-326, 421, 49], [-157, 233, 7]]
-E average value list : [44, -18, 42, 49, 7]
+E final values [67, 37, 127, 123, 63]
+Average value of E on finish is 83
+E value statistics : [[-158, 207, 22], [-46, 100, 9], [-181, 165, 5], [-297, 212, -48], [-67, 141, 10]]
+E average value list : [22, 9, 5, -48, 10]
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [122, 328, 506, 224, 388]
-Average value of E on finish is 314
-E value statistics : [[-120, 197, 22], [-405, 692, 65], [-661, 531, -42], [-141, 224, 20], [-434, 287, -32]]
-E average value list : [22, 65, -42, 20, -32]
+E final values [30, 216, 52, 119, 114]
+Average value of E on finish is 106
+E value statistics : [[-23, 72, 17], [-216, 237, 9], [-131, 167, 18], [-213, 206, 6], [-172, 165, 8]]
+E average value list : [17, 9, 18, 6, 8]
 ==============================================
 Kp = 0.0185, Ki = 0.008, Kd = 0.0175
-E final values [458, 188, 82, 167, 188]
-Average value of E on finish is 217
-E value statistics : [[-293, 458, 17], [-130, 188, 11], [-131, 156, 16], [-396, 456, 32], [-139, 188, 4]]
-E average value list : [17, 11, 16, 32, 4]
+E final values [114, 5, 63, 95, 66]
+Average value of E on finish is 69
+E value statistics : [[-148, 139, 1], [-174, 147, 7], [-63, 60, 2], [-344, 214, -60], [-66, 57, 11]]
+E average value list : [1, 7, 2, -60, 11]
+==============================================
+Kp = 0.0185, Ki = 0.008, Kd = 0.0175
+E final values [149, 39, 72, 7, 156]
+Average value of E on finish is 85
+E value statistics : [[-219, 274, 33], [-285, 218, -49], [-162, 198, 17], [-136, 151, 13], [-193, 173, 2]]
+E average value list : [33, -49, 17, 13, 2]
+==============================================
+Kp = 0.0185, Ki = 0.008, Kd = 0.0175
+E final values [126, 40, 61, 71, 32]
+Average value of E on finish is 66
+E value statistics : [[-203, 183, 8], [-217, 174, -25], [-213, 266, 24], [-71, 58, 10], [-32, 56, 3]]
+E average value list : [8, -25, 24, 10, 3]
+==============================================
+Kp = 0.0185, Ki = 0.008, Kd = 0.0175
+E final values [104, 62, 57, 147, 147]
+Average value of E on finish is 103
+E value statistics : [[-183, 175, 8], [-59, 112, 15], [-91, 121, 18], [-147, 150, 6], [-195, 172, 7]]
+E average value list : [8, 15, 18, 6, 7]
+==============================================
+Kp = 0.0185, Ki = 0.008, Kd = 0.0175
+E final values [70, 2, 2, 1, 6]
+Average value of E on finish is 16
+E value statistics : [[-107, 108, 9], [-219, 294, 26], [-38, 72, 3], [-31, 75, 6], [-163, 150, 13]]
+E average value list : [9, 26, 3, 6, 13]
+==============================================
+Kp = 0.0185, Ki = 0.008, Kd = 0.0175
+E final values [97, 106, 34, 77, 59]
+Average value of E on finish is 75
+E value statistics : [[-276, 286, -28], [-167, 153, 4], [-149, 147, 12], [-195, 238, 16], [-202, 235, 19]]
+E average value list : [-28, 4, 12, 16, 19]

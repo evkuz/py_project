@@ -136,13 +136,15 @@ const byte movingThreshold = 75; //20;
 
 
 //++++++++++++++++++++++++ Начало вращения колеса в режиме "на вису"
-int m1LightSpeed = 5;//27;
-int m2LightSpeed = 5; //24;
+int m1LightSpeed = 22;//27;
+int m2LightSpeed = 22; //24;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 int defaultMSpeed = 25;
 int cruiseMSpeed = 50/2;
-int speedBottomLimit = round(0.7*min(m1LightSpeed, m2LightSpeed));// 28; 
-int speedTopLimit = round(2.1*min(m1LightSpeed, m2LightSpeed));//150;
+
+// Пределы обновляются в ф-ции updateLimits() после калибровки
+int speedBottomLimit = 0; //round(0.85*min(m1LightSpeed, m2LightSpeed));// 28; 
+int speedTopLimit = 0;    //round(2.1*min(m1LightSpeed, m2LightSpeed));//150;
 
 volatile int m1Speed = defaultMSpeed; // Левое колесо
 volatile int m2Speed = defaultMSpeed; // Правое колесо
@@ -191,6 +193,8 @@ volatile int Eprev = 0;     // for delta Error counting
 volatile int dltEprev = 0; 
 
 volatile int E;
+volatile bool E_SignChanged = false;  // Флаг смены знака у E во время движения. 
+                                      // Т.е. отстающее/опережающее поменялись местами.
 
 volatile long myprevT = 0;
 
@@ -646,6 +650,7 @@ void startPlatform(){
   int posA2;
 
   currCommand = "starting";
+  // Повышаем скорость плавно, чтобы робот не дёргался при старте в сторону.
   // 24 & 27
   m1Speed=round(0.75 * m1LightSpeed);// + 30; startM1Speed - 32; // m1LightSpeed + K1
   m2Speed=round(0.75 * m2LightSpeed);// + 25; startM2Speed - 40; // m2LightSpeed + K2
@@ -1520,7 +1525,7 @@ int diff = posAm1 - posAm2 ;
 
 //++++++++++++++++++++++++++++++++
 void updateLimits(){ //  Меняем значения верхнего и нижнего предела скоростей.
-  speedBottomLimit = round(0.7*min(m1LightSpeed, m2LightSpeed));// 28; 
+  speedBottomLimit = round(0.85*min(m1LightSpeed, m2LightSpeed));// 28; 
   speedTopLimit = round(2.1*min(m1LightSpeed, m2LightSpeed));//150;
 
 }

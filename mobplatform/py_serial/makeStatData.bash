@@ -4,7 +4,7 @@ STATDATA="statData.txt"
 SCRIPT="calibration.py"
 
 cp /dev/null $STATDATA
-numOfCycles=10
+numOfCycles=15
 n=0
 while [ $n -le $numOfCycles ]
 do
