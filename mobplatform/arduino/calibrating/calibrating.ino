@@ -6,15 +6,15 @@
  *  
  *  Используется для калибровки энкодеров. 
  * 
- *  "moveON" :
- *  - Обнуляем все счетчики таймера, запускаем его.
- *  - включаем скорость 100 на 1с. 
  *  
  *  Простой запрет прерывания таймера НЕ обнуляет его счетчики, и при следующем разрешении прерывания, т.е. запуске - он скорее всего отсчитает менее 1с.
  *  
  *  Когда сработает таймер (Через 1с) - скорость 0 (выключаем, останавливаем)
  *  
- *  "getValues" - выдаем значения энкодеров
+ *  "getValues" - выдаем в консоль значения энкодеров, и прочие данные.
+ *  "setPID"    - Задаем PID-коэффициенты, число циклов запуска платформы, длительность в мс каждого запуска.
+ *  "getTimes"  - Вывести текущие значения measureTime pidTime
+ *  "moveon"    - Просто запускаем тележку, чтобы ехала. Без ПИД. Останавливаем, передаем показатели в ПК
  * 
  * ДУмаем, как прикрутить ПИД
  * 
@@ -111,9 +111,10 @@ struct Enc {
 // running
 // stopped
 
-volatile Enc data;
+Enc data;
 
-String commandList[10] = {"blink","start", "stop", "moveon", "setPID", "reset", "getValues" ,"samplingTime", "calibration", "setSpeedInit"};
+
+String commandList[10] = {"blink", "start", "stop", "moveon", "setPID", "reset", "getValues", "samplingTime", "calibration", "setSpeedInit"};
 
 DualVNH5019MotorShield md; // Motor Driver
 
@@ -126,7 +127,7 @@ byte ints[sBufSize]; // Данные, полученные по serial
 
 
 String str="";
-volatile String currCommand = ""; // Текущая команда
+String currCommand = ""; // Текущая команда
 
 const  byte pinAm1 = 19; // Пины драйвера Polulu
 const  byte pinBm1 = 18; // 
@@ -142,16 +143,16 @@ int m2LightSpeed = 22; //24;
 int defaultMSpeed = 25;
 int cruiseMSpeed = 50/2;
 
-// Пределы обновляются в ф-ции updateLimits() после калибровки
+// Пределы обновляются в ф-ции updateLimits() после калибровки, точнее после завершения команды "setSpeedInit"
 int speedBottomLimit = 0; //round(0.85*min(m1LightSpeed, m2LightSpeed));// 28; 
 int speedTopLimit = 0;    //round(2.1*min(m1LightSpeed, m2LightSpeed));//150;
 
-volatile int m1Speed = defaultMSpeed; // Левое колесо
-volatile int m2Speed = defaultMSpeed; // Правое колесо
+int m1Speed = defaultMSpeed; // Левое колесо
+int m2Speed = defaultMSpeed; // Правое колесо
 
 //++++++++++++++++++++++++ Начало вращения колеса в режиме "на земле"
-volatile int startM1Speed = m1LightSpeed;// + 50; //92;//102; //121; //82;  // Порог старта движения для М1
-volatile int startM2Speed = m2LightSpeed;// + 50; //89; //108; //67;  // ... для М2 
+int startM1Speed = m1LightSpeed;// + 50; //92;//102; //121; //82;  // Порог старта движения для М1
+int startM2Speed = m2LightSpeed;// + 50; //89; //108; //67;  // ... для М2 
 
 
 //volatile int *fwdmSpeed; // Скорость опережающего
@@ -161,25 +162,25 @@ volatile int startM2Speed = m2LightSpeed;// + 50; //89; //108; //67;  // ... д�
 volatile long posAm1 = 0;
 volatile long posBm1 = 0;
 
-volatile int diameter; // 90mm
-volatile int m1A_count, m1B_Count, m2A_count, m2B_count;
-volatile double m1_count, m2_count;
-volatile int m1A_k, m1B_k, m2A_k, m2B_k; // число отсчетов энкодера на 1 оборот колеса. Здесь k - коэффициент
+int diameter; // 90mm
+int m1A_count, m1B_Count, m2A_count, m2B_count;
+double m1_count, m2_count;
+int m1A_k, m1B_k, m2A_k, m2B_k; // число отсчетов энкодера на 1 оборот колеса. Здесь k - коэффициент
 
 // Возможно это дубль. Оставляем, чтобы компилятор проходил.
-volatile long diffAbsolute = 0; // Абсолютная разница в энкодерах 1-го и 2го колеса 
-volatile long diffRelative = 0; // Относительная разница(относительно предыдущих показаний) в энкодерах 1-го и 2-го колеса.
+long diffAbsolute = 0; // Абсолютная разница в энкодерах 1-го и 2го колеса 
+long diffRelative = 0; // Относительная разница(относительно предыдущих показаний) в энкодерах 1-го и 2-го колеса.
 
 //+++++++++++++++++++++++++++++++++++++++++ PID variables +++++++++++++++++++
-// volatile double Kp, Ki, Kd;
-// volatile float P, I, D;
+// double Kp, Ki, Kd;
+// float P, I, D;
 float Kp = 0.0; // 0.0235;
 float Ki = 0.0; // 0.01;
 float Kd = 0.0; // 0.0275;
  
 
 const int timerPerRotation = 2; // Сколько раз срабатывает таймер за 1 оборот колеса
-volatile double TRC = (double)1/timerPerRotation; // timer/rotation coefficient == dt т.к. таймер за 1 сек.
+double TRC = (double)1/timerPerRotation; // timer/rotation coefficient == dt т.к. таймер за 1 сек.
 
 
 boolean isSomeOneLeading; // Флаг смены отстающего колеса на ведущее. Если М1_А > M2_A isSomeOneLeading == false, т.к. обычно М1 крутится быстрее М2
@@ -188,15 +189,16 @@ boolean isSomeOneLeading; // Флаг смены отстающего колес
                          // Значит скорость сбрасываем, когда разница в показаниях меньше 
 
 
-volatile long prevT = 0;    // for delta t counting
-volatile int Eprev = 0;     // for delta Error counting
-volatile int dltEprev = 0; 
+long prevT = 0;    // for delta t counting
+int Eprev = 0;     // for delta Error counting
+int dltEprev = 0; 
 
-volatile int E;
-volatile bool E_SignChanged = false;  // Флаг смены знака у E во время движения. 
+int E;
+bool E_SignChanged = false;  // Флаг смены знака у E во время движения. 
                                       // Т.е. отстающее/опережающее поменялись местами.
+bool dltEchangedSign=false;                                      
 
-volatile long myprevT = 0;
+long myprevT = 0;
 
 unsigned long msPrevT = 0; // Для фиксации интервалов проверки E
 unsigned long msCurrT = 0;
@@ -206,14 +208,14 @@ unsigned long elapsedTime = 0;
 unsigned long lastPidTime  = 0; // Фиксируем время последнего срабатывания PID
 unsigned long isItPidTime = 0;  // А не пора ли запускать ПИД ?
 
-volatile unsigned long measureTime = 6000; // Время движения в мс
-volatile unsigned int pidTime = 200; // Интервал в мс между корректировками скорости.
+unsigned long measureTime = 6000; // Время одного цикла в мс
+unsigned int pidTime = 200; // Интервал в мс между корректировками скорости.
 
-volatile float Eintegral = 0;
+float Eintegral = 0;
 
-volatile byte encodersGAP = 50;                               // То включаем ПИД
+byte encodersGAP = 50;                               // То включаем ПИД
 
-volatile bool pid1stTime = true; // Флаг запуска ПИД. самый первый раз, после запуска loop    
+bool pid1stTime = true; // Флаг запуска ПИД. самый первый раз, после запуска loop    
 
 long Timer1A_OneSec = 15624;
 
@@ -221,37 +223,38 @@ float t1 = 0.521; // test
 float t2 = 15.125;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-volatile long posAm1_prev = 0; // previous value of Am1
-volatile long posAm2_prev = 0; // previous value of Am2
+long posAm1_prev = 0; // previous value of Am1
+long posAm2_prev = 0; // previous value of Am2
 
-volatile long TimerA1_prev = 0; // previous value of A1 in timer
-volatile long TimerA2_prev = 0; // previous value of A2 in timer
+long TimerA1_prev = 0; // previous value of A1 in timer
+long TimerA2_prev = 0; // previous value of A2 in timer
 
 
-volatile int diff = 0; // difference between posAm1, posAm2
-volatile int diff_prev = 0; // previous difference between posAm1, posAm2
+int diff = 0; // difference between posAm1, posAm2
+int diff_prev = 0; // previous difference between posAm1, posAm2
 
 
 const  byte pinAm2 = 20;  //(PE4 for ATMega2560, Digital 2-pin)
 const  byte pinBm2 = 21;  //(PE5 for ATMega2560, Digital 3-pin)
+
 volatile long posAm2 = 0;
 volatile long posBm2 = 0;
 
 const int M1 = 480; // Мотор М1 Число отсчетов энкодера на 1 оборот колеса
 const int M2 = 482; // Мотор М2 Число отсчетов энкодера на 1 оборот колеса
 
-volatile long stopCounter = 0;
+long stopCounter = 0;
 
-//volatile long intM1counter = 0;
-//volatile long intM2Bcounter = 0;
+//long intM1counter = 0;
+//long intM2Bcounter = 0;
 
-volatile int pinAm1Value = 0;   // Переменные хранящие состояние пина, для экономии времени
-volatile int pinBm1Value = 0;   // Переменные хранящие состояние пина, для экономии времени
+int pinAm1Value = 0;   // Переменные хранящие состояние пина, для экономии времени
+int pinBm1Value = 0;   // Переменные хранящие состояние пина, для экономии времени
 
-volatile int pinAm2Value = 0;   // Переменные хранящие состояние пина, для экономии времени
-volatile int pinBm2Value = 0;   // Переменные хранящие состояние пина, для экономии времени
+int pinAm2Value = 0;   // Переменные хранящие состояние пина, для экономии времени
+int pinBm2Value = 0;   // Переменные хранящие состояние пина, для экономии времени
 
-volatile bool startFlag = false; // Началось движение тележки
+bool startFlag = false; // Началось движение тележки
 
 
 const unsigned long ONE_SECOND = 15624;
@@ -388,91 +391,7 @@ void loop()
 {
 
  parse_command();
-//+++++++++++++++++++++++++++++++++++++++++++++  Просто едем вперед с постоянной скоростью 
-   if (currCommand == "starting"){
-     //  startNoTimer();
-       movingTime = millis();    // Фиксируем время начала движения
-       lastPidTime = movingTime; // Фиксируем время последнего срабатывания PID
-
-       //currCommand = "moving";
-       
-       startFlag = true;
-
-    }
-
- 
-//+++++++++++++++++++++++++++++++++++++++++++++  Едем на время, включаем пид 
-
- if (currCommand == "moving" || currCommand == "pid" || currCommand == "calibration"){// || currCommand == "calibration"){// Считаем время движения, если истекло - останавливаем.
-  msCurrT = millis();
-  elapsedTime = msCurrT - movingTime;
-  
-//  str = "ElapsedTime= ";
-//  str += String(elapsedTime); str += ", ";
-//  str += "movingTime= ";
-//  str += String(movingTime); str += ", ";
-//  
-//    Serial.println(str);
-//    Serial.flush();
-
-
-  if (msCurrT >= lastPidTime + pidTime){ // Is it time to start PID ?
-    int diff = posAm1 - posAm2 ;
-    int delta = 0;
-    
-    lastPidTime = msCurrT;
-   
-     
-    if (diff<0){delta= -1*diff;}
-    else {
-      delta = diff;
-      }
-            
-    //if (delta >= encodersGAP && currCommand == "pid"){ 
-    if (currCommand == "pid"){ 
-    
-            //currCommand == "pid")
-            pid();
-            pid1stTime = false;
-           
-      }
-    if (currCommand == "moving"){ // значит moving
-//      if (currCommand == "pid") { // Т.е. в процессе движения в режиме PID разницы почти нет, тогда может в обратную сторону уже крутить ?
-        // Тогда тут нужна какая-то особая ф-ция, или параметр для ф-ции pid()
-        //currCommand = "moving";
-        // Eprev = E;
-        data.A1_Enc = posAm1;
-        data.A2_Enc = posAm2;
-        data.diff = diff;
-        data.Eprev = Eprev;
-
-        str = "!!! ABS(diff)="; str += String(delta); str += " is less than GAP="; str += String(encodersGAP); str += " !!!";
-        str.toCharArray(data.mytext, sizeof(data.mytext));
-        data.time_ms = millis();
-
-        Serial.write((byte*)&data, sizeof(data));
-        Serial.flush();
-        E = diff;
-        Eprev = diff;
-        prevT = msCurrT;
-         
-//        }//if
-      } // if moving
-
-      
-      
-    } //  (msCurrT >= lastPidTime + pidTime)
-    
-  if (elapsedTime >= measureTime){ // Истекло, встаем
-    stopPlatform();
-    currCommand = "finish--";
-
-     Eprev = 0;
-
-    } //(elapsedTime >= measureTime)
-  
-  } // (currCommand == "moving";)
-
+//============================================= Если на прошлом цикле currCommand = finish--
   if (currCommand == "finish--"){ // Проверяем полную остановку
     if (posAm1 == posAm1_prev && posAm2 == posAm2_prev){
 
@@ -486,7 +405,7 @@ void loop()
       data.time_ms = millis();
       currCommand.toCharArray(data.mystatus, sizeof(data.mystatus));
 
-      str = "  currCommand == finish--  and stopped NOW "; 
+      str = " currCommand == finish--  and stopped NOW "; 
       str.toCharArray(data.mytext, sizeof(data.mytext));
 
 
@@ -519,7 +438,85 @@ void loop()
 
       }
     }
+  
+//+++++++++++++++++++++++++++++++++++++++++++++  Просто едем вперед с постоянной скоростью 
+   if (currCommand == "starting"){
+     //  startNoTimer();
+       movingTime = millis();    // Фиксируем время начала движения
+       lastPidTime = movingTime; // Фиксируем время последнего срабатывания PID
+
+       //currCommand = "moving";
+       
+       startFlag = true;
+
+    }
+
  
+//+++++++++++++++++++++++++++++++++++++++++++++  Едем на время, включаем пид 
+
+ if (currCommand == "moving" || currCommand == "pid" || currCommand == "calibration"){// || currCommand == "calibration"){// Считаем время движения, если истекло - останавливаем.
+  msCurrT = millis();
+  elapsedTime = msCurrT - movingTime;
+  
+
+  if (msCurrT >= lastPidTime + pidTime){ // Is it time to start PID ?
+    int diff = posAm1 - posAm2 ;
+    int delta = 0;
+    
+    lastPidTime = msCurrT;
+   
+     
+    if (diff<0){delta= -1*diff;}
+    else {
+      delta = diff;
+      }
+            
+    //if (delta >= encodersGAP && currCommand == "pid"){ 
+    if (currCommand == "pid"){ 
+    
+            //currCommand == "pid")
+            pid();
+            pid1stTime = false;
+           
+      }
+    if (currCommand == "moving"){ // значит moving
+//      if (currCommand == "pid") { // Т.е. в процессе движения в режиме PID разницы почти нет, тогда может в обратную сторону уже крутить ?
+        // Тогда тут нужна какая-то особая ф-ция, или параметр для ф-ции pid()
+        //currCommand = "moving";
+        // Eprev = E;
+        data.A1_Enc = posAm1;
+        data.A2_Enc = posAm2;
+        data.diff = diff;
+        data.Eprev = Eprev;
+
+        str = "!!! ABS(diff)="; str += String(delta); str += " and GAP="; str += String(encodersGAP); str += " !!!";
+        str.toCharArray(data.mytext, sizeof(data.mytext));
+        data.time_ms = millis();
+
+        Serial.write((byte*)&data, sizeof(data));
+        Serial.flush();
+        E = diff;
+        Eprev = diff;
+        prevT = msCurrT;
+     } // if moving
+
+      
+      
+    } //  (msCurrT >= lastPidTime + pidTime)
+//============================================================
+    
+  if (elapsedTime >= measureTime){ // Истекло, встаем
+    stopPlatform();
+    delay(5);
+    currCommand = "finish--";
+
+     Eprev = 0;
+
+    } //(elapsedTime >= measureTime)
+  
+  } // (currCommand == "moving" || "pid" || "calibration";)
+//===================================================================
+
    
 delay(10);
     posAm1_prev = posAm1;
@@ -529,9 +526,10 @@ delay(10);
 //+++++++++++++++++++++++++++++++++++++++++++++++++
 // У нас срабатывают прерывания от энкодеров A1, B1, A2, B2
 // Обработчик каждого из прерываний выдает значения соответствующего энкодера.
-void getValues(float &delta_T, float &dedt)
+//void getValues(float &delta_T, float &dedt)
+void getValues()
 {
-  unsigned long currentMillis;
+  //unsigned long currentMillis;
   //+++++++++++++++++++
 //  str = "M1_A ";
 //  str.concat(posAm1);
@@ -646,8 +644,8 @@ void getValues(float &delta_T, float &dedt)
 void startPlatform(){
 
   reset_All();
-  int posA1;
-  int posA2;
+//  int posA1;
+//  int posA2;
 
   currCommand = "starting";
   // Повышаем скорость плавно, чтобы робот не дёргался при старте в сторону.
@@ -662,8 +660,8 @@ void startPlatform(){
   
   float f1Speed = 0.0;
   float f2Speed = 0.0; // вещественное значение Скорости
-  posA1 = posAm1;
-  posA2 = posAm2;
+//  posA1 = posAm1;
+//  posA2 = posAm2;
 
 //  str = "posAm1="; 
 //  str += String(posAm1); str += ", ";
@@ -686,9 +684,9 @@ void startPlatform(){
     delay(200);
     if (posAm1 > 200) {m1Started = true; startM1Speed = m1Speed;}; //  str = "M1 Started at " ; str += String(m1Speed); Serial.println(str);}
     if (posAm2 > 200) {m2Started = true; startM2Speed = m2Speed;}; //  str = "M2 Started at " ; str += String(m2Speed); Serial.println(str);}
-    posA1 = posAm1;
-    posA2 = posAm2;
-   
+//    posA1 = posAm1;
+//    posA2 = posAm2;
+//   
   }
 //    posAm1_prev = posA1;
 //    posAm2_prev = posA2;
@@ -836,8 +834,8 @@ void startNoTimer(){
 //+++++++++++++++++++++++++++++++++++++
 void stopPlatform(){
         currCommand = "stopped!";
-        startFlag==false; // Готовы к старту.
-        pid1stTime = false;  // Останавливаем ПИД
+        startFlag=false; // Готовы к старту.
+        pid1stTime = true;  // Останавливаем ПИД
         //reset_All();
         TIMSK1 &= ~(1 << OCIE1A);  // выключение прерываний по совпадению или "сброс по совпадению", бит OCIE1A - Timer/Counter1, Output Compare A Match Interrupt Enable
         md.setM1Speed(0);
@@ -863,7 +861,7 @@ void parse_command()
         } //"enc1pivot"
       
       
-      if (message == "blink") // Разрешаем прерывания таймера 1
+      if (message == "blink") // Разрешаем прерывания таймера 1, проверяем точноть работы таймера.
       {
         ocrValue = ONE_SECOND;
         cli();  // отключить глобальные прерывания
@@ -880,16 +878,19 @@ void parse_command()
        Serial.flush();
         
       }// "blink"
-
-      if (message == "start") // Разрешаем прерывания таймера 1
+//==========================================
+      if (message == "start") // Запускаем робота, после старта включаем режим ПИД
       {
         message = "";
-        currCommand = "start";
+        currCommand = "start"; // Это чтобы пока стартует в loop() не было лишних движений.
         reset_All();
 
         startPlatform();
+        measureTime = 6000;
+        // Serial.println("!!!!!!!!!! Started !!!!!!!1");
         // Сразу переходим в pid
         currCommand = "pid";  // Переходим сразу в режим pid
+        pid1stTime = true;
         movingTime = millis();    // Фиксируем время начала движения
         prevT = movingTime;     // Чтобы ПИД
         Eintegral = 0;            // Чтобы ПИД
@@ -912,16 +913,18 @@ void parse_command()
         
         data.lagSpeed_ptr = 0;//m1Speed; // Только стартанули, еще нет отстающих/опережающих
         data.fwdSpeed_ptr = 0;//m2Speed;
-        data.M1Speed_start = &m1Speed;
-        data.M2Speed_start = &m2Speed;
+        data.M1Speed_start = int(&m1Speed);
+        data.M2Speed_start = int(&m2Speed);
         
         data.Integral = 777.0;
 
         str = "started!";
         str.toCharArray(data.mystatus, sizeof(data.mystatus));
+        
         data.timestamp = movingTime;
         data.Proportional = Kp;
         data.Derivative = Kd;
+        
         str = "Just Started with minimum speed values";
         str.toCharArray(data.mytext, sizeof(data.mytext));
 
@@ -934,7 +937,7 @@ void parse_command()
       if (message == "stop") // Запрещаем прерывания таймера 1 - перестаем слать данные в Serial Port
       {
         currCommand = "stop";
-        startFlag==false; // Готовы к старту.
+        startFlag=false; // Готовы к старту.
         pid1stTime = false;  // Останавливаем ПИД
         //reset_All();
         TIMSK1 &= ~(1 << OCIE1A);  // включение прерываний по совпадению или "сброс по совпадению", бит OCIE1A - Timer/Counter1, Output Compare A Match Interrupt Enable
@@ -945,13 +948,13 @@ void parse_command()
         }
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++ Parameters ++++++++++++++++++++++++++++++++
     if (message.startsWith("setPID")){ // Задаем PID-коэффициенты, число циклов запуска платформы, длительность в мс каждого запуска.
-       // setPID 0.0256 2.3578 3.8754 7 5500 400
+       // setPID 0.0185 0.080 0.175 4 2000 300
        //message = "setPID 0.0235 222.2222 3333.3333 7 5500 400";
     str = message.substring(7);
     
       String K;
       int Num;
-      String mystr;
+     // String mystr;
 
       currCommand = "waiting";
       //int N = EK_split_str(str, sPtr, SPTR_SIZE);      
@@ -971,8 +974,8 @@ void parse_command()
       Kp = K.toFloat()*10000;
       //float Kpp = //float(235/10000);  1000 * 0.0235; 
       //float Kpp = 235/1000;
-
-      str = "Kp= "; 
+      str = '\n';
+      str += "Kp= "; 
       str += String(Kp);
       str += " ## ";
       
@@ -1013,7 +1016,7 @@ void parse_command()
       pidTime = Num;    // Время движения с постояннмыи ПИД-настройками, 400 - это время действия ПИД в мс.
       //pidTime = 400;
       
-     str = "Tpid = "; 
+     str += "Tpid = "; 
      str += String(pidTime);
      str += ", ";
      str += "N = ";
@@ -1043,8 +1046,8 @@ void parse_command()
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
- if (message.startsWith("samplingTime")){ // Задаем Время длительности 1 цикла движения в секундах
-    //samplingTime 10
+ if (message.startsWith("samplingTime")){ // Задаем Время длительности 1 цикла движения(цикл действия текущего значения скорости колес) в секундах
+    //samplingTime 10                     // НА каждом цикле ПИД-коэффициенты, а, соответственно, u, и скорость могут меняться.
     str = message.substring(sizeof("samplingTime"));
     unsigned int sTime;
     sTime = str.toInt();
@@ -1109,8 +1112,8 @@ void parse_command()
         
         data.lagSpeed_ptr  = m1Speed;
         data.fwdSpeed_ptr  = m2Speed;
-        data.M1Speed_start = &m1Speed;
-        data.M2Speed_start = &m2Speed;
+        data.M1Speed_start = int(&m1Speed);
+        data.M2Speed_start = int(&m2Speed);
         
         data.Integral = 777.0;
         
@@ -1130,7 +1133,7 @@ void parse_command()
        
      } //"moveON"
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-      if (message == "reset") // Разрешаем прерывания таймера 1
+      if (message == "reset") // Сбрасываем показания всех энкодеров.
       {
         reset_All();
           Serial.println("Done");
@@ -1139,7 +1142,7 @@ void parse_command()
  
         }
 //++++++++++++++++++++++++++++++++++
-      if (message == "getValues") // Просто выводим текущие данные энкодеров
+      if (message == "getValues")
       {
           diff = abs(posAm1 - posAm2);
           
@@ -1187,7 +1190,7 @@ void parse_command()
           posAm1_prev = posAm1;
           posAm2_prev = posAm2;
 
-          while ((posAm1 - posAm1_prev) < 50){
+          while ((posAm1 - posAm1_prev) < 50 || (posAm2 - posAm2_prev) < 50 ){
 
             m1Speed += 1;
             m2Speed += 1;
@@ -1195,6 +1198,9 @@ void parse_command()
             md.setM2Speed(m2Speed);
 
             delay(400);
+            Am1();
+            Am2();
+
             
           }
 
@@ -1271,6 +1277,7 @@ void parse_command()
       currCommand.toCharArray(data.mystatus, sizeof(data.mystatus)); // Фиксируем статус b'calibra', чтобы на стороне ПК сработало ПО
       //currCommand = "moving";
       currCommand = "calibration";
+      measureTime = 3000;
       movingTime = millis();    // Фиксируем время начала движения
       data.time_ms = movingTime;
       prevT = movingTime;     // Чтобы ПИД
@@ -1308,7 +1315,7 @@ void parse_command()
       int N = separate (str, sPtr, SPTR_SIZE,  &strData); 
       String K;
 
-      
+      N +=1; // take off "unused variable"
 
       K = sPtr[0];
       m1LightSpeed = K.toInt();
@@ -1427,7 +1434,7 @@ TCNT1  = 0;
 
 
 //getValues(t1, t2);
-int delta = 0;
+//int delta = 0;
 
 int diff = posAm1 - posAm2 ;
 

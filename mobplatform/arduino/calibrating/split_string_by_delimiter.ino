@@ -83,7 +83,7 @@ EK_split_str (
      StringCount++;
       mystr = str;
       const char *data = mystr.c_str();
-      *p++ = data;
+      *p++ = (char *)data;
       str  = ""; // now str.length == 0
       mydata = "FINAL selected string is ";
       mydata += data;
@@ -101,7 +101,7 @@ EK_split_str (
       StringCount++;
       mystr = str.substring(0, index);
       const char *data = mystr.c_str();
-      *p++ = data;
+      *p++ = (char *)data;
       str = str.substring(index+1);
       mydata = "selected string is ";
       mydata += data;

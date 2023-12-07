@@ -1,15 +1,15 @@
-#!/usr/bin/env python
-# Запускаем последовательно разные команды.
-# Тут пишем данные в файл в текстовом виде, НО посылка приходит в двоичном.
-# Нужно соответствующая прошивка Ардуино
+#!/usr/bin/env python3
+# coding=UTF8
+# Send commands from PC to robot.
 # PC => mobPlat
 # rsync -av /home/ubuntu/pyprojects/mobplatform/py_serial/ga_bin_comport.py nvidia@192.168.1.176:/home/nvidia/pyprojects/mobplatform/py_serial/
+# rsync -av /home/ubuntu/pyprojects/mobplatform/py_serial/calibration.py nvidia@192.168.1.150:/home/nvidia/mobplatform/py_serial/
 #
 # mobplat => PC
 # rsync -av nvidia@192.168.1.176:/home/nvidia/pyprojects/mobplatform/py_serial/Et.txt /home/ubuntu/pyprojects/mobplatform/py_serial/plotting
 # rsync -av nvidia@192.168.1.176:/home/nvidia/pyprojects/mobplatform/py_serial/data.csv /home/ubuntu/pyprojects/mobplatform/py_serial
 #
-# Ищем файлы новее 01.07.2023
+# find files younger than 01.07.2023
 # sudo find /home/ubuntu -type f -newermt 2023-07-01 -iname "*.png" >> Bg2079.JUL
 #
 #   В режиме "на полу" коэффициенты :
@@ -45,6 +45,7 @@
 #     float Derivative; // 4 bytes
 
 #     }; // 107 bytes total
+#  String commandList[9] = {"blink","start", "stop", "moveon", "setPID", "reset", "getValues" ,"samplingTime", "calibration"};
 
 import serial
 import threading
@@ -56,7 +57,30 @@ import math
 import csv
 
 
-#  String commandList[9] = {"blink","start", "stop", "moveon", "setPID", "reset", "getValues" ,"samplingTime", "calibration"};
+def read_serial():
+    global diff
+    global diff_prev
+    global diff_posAm1
+    global diff_popsAm2
+    global posAm1_prev
+    global posAm2_prev
+    global Eintegral
+    global parcelSize
+    global csvData
+    global status
+    global counter
+    #    global E_FinList
+
+    data = []
+    strData = ''
+
+    while ser.in_waiting:
+        if status == "setSpeedInit":
+            print("read_serial waiting while status is setSpeedInit")
+        data = ser.read(parcelSize)
+        #   time.sleep(1)
+        parseData(data)
+
 
 def parseData(data):
     global diff
@@ -79,7 +103,7 @@ def parseData(data):
     global Estat
     global E_AverageList
 
- #   print("I'm in parseData")
+    # print("I'm in parseData, status is",status)
     mycsvData = []
     strData = ''
 
@@ -106,7 +130,7 @@ def parseData(data):
     mycsvData.append(millis)
 
     movTime = data[48:52]
-    movingTime, = struct.unpack('<l', movTime)
+    movingTime, = struct.unpack('<L', movTime)
     mycsvData.append(movingTime)
 
     sp1 = data[8:10]
@@ -256,19 +280,29 @@ def parseData(data):
     strData = str(millis) + "," + str(E) + '\n'
     f.write(strData)
 
+    # print("current status is", status)
+    # print("status FROM ARDUINO IS ",lstatus)
+    # print("Counter values is ", str(counter))
+
 
 def write_serial():
+    #   print("write_serial ")
     global notFinished
     global event
     global counter
     global status
     global m1_light
     global m2_light
+    global ser
+    global f
+    global encdata
 
     if status == "stop":
         status = "moving"
         task = "start"  # "moveon"   input()
+        # print("Start command GOING TO send")
         ser.write(task.encode())
+        # print("Start command sended")
 
     if status == "setPID":
         task = "setPIDabc"
@@ -278,12 +312,12 @@ def write_serial():
         status = "stop"
 
     if status == "calibrating":
-        print()
-        print("send calibrating")
+        # print()
+        # print("send calibrating")
         task = "calibration"
         ser.write(task.encode())
         status = "calculate"  # Главное, что не stop и не moving. Начинаем считать среднее значение скорости.
-        print("Calibrating is  Sent")
+        # print("Calibrating is  Sent")
 
     if status == "setSpeedInit":
         print("send setSpeedInit")
@@ -302,60 +336,39 @@ def write_serial():
         ser.write(task.encode())
         status = "waiting"
 
-    if status == "close":
-        read_serial(parcelSize)
-        f.close()
-        encdata.close()
-        ser.flushInput()
-        ser.flushOutput()
-        ser.close()
-        event.set()
-        notFinished = False
-        # t1.join()
-        # t2.join()
-        # print("Bye...")
-        exit()
-
-
-def read_serial():
-    global diff
-    global diff_prev
-    global diff_posAm1
-    global diff_popsAm2
-    global posAm1_prev
-    global posAm2_prev
-    global Eintegral
-    global parcelSize
-    global csvData
-    global status
-    global counter
-    #    global E_FinList
-
-    data = []
-    strData = ''
-
-    while ser.in_waiting:
-        data = ser.read(parcelSize)
-        #   time.sleep(1)
-        parseData(data)
+    # if status == "close":
+    #     read_serial(parcelSize)
+    #     f.close()
+    #     encdata.close()
+    #     ser.flushInput()
+    #     ser.flushOutput()
+    #     ser.close()
+    #     event.set()
+    #     notFinished = False
+    #     # t1.join()
+    #     # t2.join()
+    #     # print("Bye...")
+    #     # exit()
 
 
 def perform_transactions():
-    t2 = threading.Thread(target=read_serial)
     t1 = threading.Thread(target=write_serial)
+    t2 = threading.Thread(target=read_serial)
 
     # start threads
-    t2.start()
     t1.start()
-    # wait until threads finish their job
-    t2.join()
+    t2.start()
+   # wait until threads finish their job
     t1.join()
+    t2.join()
 
 
 if __name__ == "__main__":
     # print(serial.__version__)
     # Список используемых статусов. Чтобы в них не запутаться.
     lstatus = ["stop", "setPID", "moving", "calibrating", "calculate", "done", "waiting", "moveon"]
+    #   Список команд, который зашит в Ардуино
+    lCommand = ["blink", "start", "stop", "moveon", "setPID", "reset", "getValues", "samplingTime", "calibration", "setSpeedInit"]
     diff = 0
     diff_prev = 0  # Значение diff на предыдущем проходе потока
     diff_posAm1 = 0
@@ -366,12 +379,12 @@ if __name__ == "__main__":
 
     encodersGAP = 10
     Eintegral = 0
-    Kp = 0.0185
+    Kp = 0.0185 #   Главное, что значение kp должно быть таким, чтобы система при нулевом значении kd не совершала колебаний.
     Ki = 0.0080 # 0.0083  # 0.0123
     Kd = 0.0175  # 0.0275
 
-    Num = 0  # Количество циклов запуска платформы, отсчет с 0
-    Tfull = 6000  # Время работы в мс 1 цикла запуска платформы.
+    Num = 5  # Количество циклов запуска платформы, отсчет с 0
+    Tfull = 4000  # Время работы в мс 1 цикла запуска платформы.
     Tpid = 300  # Время работы PID в мс. Это интервал, в течение которого действуют текущие ПИД-коэффициенты.
 
     # counter = -1 # счетчик запусков тележки, встаёт в 0 после отправки ПИД-коэффициентов
@@ -484,7 +497,8 @@ if __name__ == "__main__":
 
     status = "calibrating"
     counter = 0
-    Num = 0
+    Num = 3
+    print("Calibrating")
     while counter < Num:
         # Пока идет calibrating имеем статус "calculate"
         # print("counter = ", counter, " status = ", status)
@@ -503,15 +517,17 @@ if __name__ == "__main__":
     # print(M1Speed)
     # print(M2Speed)
     from statistics import mean
-    #
-    # m1_avg = mean(M1Speed)
-    # m2_avg = mean(M2Speed)
-    # print("Average value of the M1, M2 Speed with precision up to 3 decimal value:")
-    # print(round(m1_avg, 3), ", ", round(m2_avg, 3))
-    # m1_light = round(m1_avg)
-    # m2_light = round(m2_avg)
-    m1_light = 26
-    m2_light = 23
+    m1_avg = mean(M1Speed)
+    m2_avg = mean(M2Speed)
+    print("Average value of the M1, M2 Speed with precision up to 3 decimal value:")
+    print(round(m1_avg, 3), ", ", round(m2_avg, 3))
+    m1_light = round(m1_avg)
+    m2_light = round(m2_avg)
+      # m1_light = 26
+      # m2_light = 23
+
+    # m1_light = 84 # k.270
+    # m2_light = 84
 
     print("Init values for speed are ", m1_light, ", ", m2_light)
     ###########################################  Отправка вычисленных начальных значений скоростей
@@ -519,10 +535,10 @@ if __name__ == "__main__":
     while status != "done":
         perform_transactions()
 
-    #   print("Initial values for wheels speed are settled")
+    print("Initial values for wheels speed are settled")
     ##########################################  запускаем робота, пид включается по необходимости.
-    M1Speed = []
-    M2Speed = []
+    M1Speed.clear()
+    M2Speed.clear()
     Etotal = []
     M1Stat = []
     M2Stat = []
@@ -530,7 +546,7 @@ if __name__ == "__main__":
     status = "stop"  # По этому статусу запускается "start"
     #   status = "moveon"
     counter = 0
-    Num = 5
+    Num = 2
     while counter < Num:
         perform_transactions()
         # if status == "stop":

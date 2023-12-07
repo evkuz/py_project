@@ -140,10 +140,10 @@ void struct_init(){
   data.E = 0;
   data.Eprev = 0;
   
-  data.lagSpeed_ptr = &m1Speed;
-  data.fwdSpeed_ptr = &m2Speed;
-  data.M1Speed_start = &m1Speed;
-  data.M2Speed_start = &m2Speed;
+  data.lagSpeed_ptr = int(&m1Speed);
+  data.fwdSpeed_ptr = int(&m2Speed);
+  data.M1Speed_start = int(&m1Speed);
+  data.M2Speed_start = int(&m2Speed);
 
   data.Integral = 0.0;
   //str = "stopped ";
@@ -154,7 +154,7 @@ void struct_init(){
   data.Integral_k = Ki;
   data.Derivative = Kd;
 
-  str = "каждый охотник желает знать где сидит фазан";
+  str = "Every move you make, every breath you take"; //каждый охотник желает знать где сидит фазан
   str.toCharArray(data.mytext, sizeof(data.mytext));
   
 
@@ -178,7 +178,15 @@ void pid()
 //  float Kd = 0.0275;
 //  float Ki = 0.0147;
 
-
+//  str = "I'm in PID ";
+//  str += "m1Speed=";
+//  str += String(m1Speed);  str += ", ";
+//  
+//  str += "m2Speed=";
+//  str += String(m2Speed);;
+//
+//  Serial.println(str);
+//  Serial.flush();
 
   int* fwdmSpeed; // Скорость опережающего
   int* lagmSpeed; // Скорость отстающего колеса
@@ -187,14 +195,14 @@ void pid()
 
   int E; // Ошибка - отличие фактического от целевого.
 
-  float  Er; // Вычисляем
+//  float  Er; // Вычисляем
 
-  int diffLimit = 100; // Если больше этого, включаем ПИД
+//  int diffLimit = 100; // Если больше этого, включаем ПИД
 
-  volatile int mxA, MxSpeed;  // encoder_A and speed
+//  volatile int mxA, MxSpeed;  // encoder_A and speed
   
-  int delta, delta0;  // Разница между энкодерами
-  int delta_A1, delta_A2; // разница с прошлым значением
+  int delta0;  // Разница между энкодерами
+//  int delta_A1, delta_A2; // разница с прошлым значением
 
   Am1();
   Am2();
@@ -232,19 +240,23 @@ if (deltaT == 0) {deltaT = 1.9999;}
 prevT = currentT;
 int eprev = Eprev;
 
-// Derivative
+// Derivative i.e. dltE
 int gradE = E - Eprev; // dltE Наблюдаем изменение ошибки
 
-bool dltEchangedSign=false;
+
+// bool dltEchangedSign=false;
 
 //if ((gradE>0 && dltEprev<0) || (gradE<0 && dltEprev>0)){
 //  dltEchangedSign=true;
 //  
 //  }
 
+
 // Смена знака Е с (-) на (+)
 if (E < 0 && Eprev >0) {E_SignChanged = true;}
 if (E > 0 && Eprev <0) {E_SignChanged = true;}
+if (E == 0 && Eprev !=0) {E_SignChanged = true;}
+//if (E != 0 && Eprev ==0) {E_SignChanged = true;}
 
 // Вот тут можно добавить, что если gradE < encodersGAP, это значит, что ошибка совсем мала... Но если так, то мы сюда вообще не должны попадать.
 // А вот и нет. Это не сама ошибка, а РАЗНИЦА  с прошлой ошибкой. И вот тут должна включаться инт. составляющая
@@ -270,25 +282,54 @@ float D = Kd*dedt;
  u = (abs(P + I + D))/10000;
 
 // зашли первый раз, значение u будет неадекватное, т.к. prevT==0
+currCommand = "pid";
+str = "";
+str += currCommand;
+
 String pidStatus;
 if(pid1stTime){
-  pidStatus = "True";
-  pid1stTime = false;
-  u = 0;
+    pid1stTime = false;
+    pidStatus = "True";
+    u = 0;
+    dltEprev = gradE; // dltEprev == dltE
+    str += " 1st";
   }
 else 
   {
     pidStatus = "False";
    
     }
+unsigned int len = str.length();
+  while (len < sizeof(data.mystatus))
+    {
+      
+      str += " ";
+      len = str.length();
+      
+    }
+    
+  str.toCharArray(data.mystatus, sizeof(data.mystatus));
 
-  if (delta0 < encodersGAP && !E_SignChanged) {
+//====================================================================    
+// Если dltE сменило знак, то U = 0;
+// Смена знака dltЕ 
+if (gradE < 0 && dltEprev >0) {dltEchangedSign = true;}
+if (gradE > 0 && dltEprev <0) {dltEchangedSign = true;}
+if (gradE == 0 && dltEprev !=0) {dltEchangedSign = true;}
+if (gradE != 0 && dltEprev ==0) {dltEchangedSign = true;} // u=0
+
+
+
+//====================================================================    
+// Если разница в энкодерах небольшая и произошла смена знака E, значит
+// отстающее/обгоняющее поменялись местами, значит u делаем равным 0.
+  if ((delta0 < encodersGAP && !E_SignChanged) || dltEchangedSign) {
     u=0;
     // Скорости не меняем
     }; //|| dltEchangedSign
  
   
-float calcU = u;
+// float calcU = u;
 
 
 
@@ -296,7 +337,7 @@ float calcU = u;
 
 
 // Примерно выровнялись, не меняем скорость, ждем боле существенных изменений в траектории.
-if ((-1<u<1) && (abs(gradE))<10) {u=0.0;}
+if (-1<u && u<1 && (abs(gradE))<10) {u=0.0;}
 //if (-1<u<0) {u = 0.0;}
 
 
@@ -308,6 +349,7 @@ lessSpeed += round(u);
 gtSpeed -= round(u);
 // Constrains a number to be within a range.
 
+// Ага и вот тут скорость зануляется, если через setPID не было установлено speedBottomLimit
 if (gtSpeed < speedBottomLimit) {gtSpeed = speedBottomLimit;}
 if (lessSpeed > speedTopLimit) {lessSpeed = speedTopLimit;}
 
@@ -406,8 +448,8 @@ md.setM2Speed(m2Speed);
 
   data.lagSpeed_ptr = m1Speed; // Значение после ПИД
   data.fwdSpeed_ptr = m2Speed; // Значение после ПИД
-  data.M1Speed_start = lagmSpeed; //&m1Speed;
-  data.M2Speed_start = fwdmSpeed;//&m2Speed;
+  data.M1Speed_start = int(lagmSpeed); //&m1Speed;
+  data.M2Speed_start = int(fwdmSpeed);//&m2Speed;
 
   data.Integral = I;
 
@@ -415,20 +457,44 @@ md.setM2Speed(m2Speed);
   data.Integral_k = Ki;
   data.Derivative = D;
   
-  currCommand = "pid";
+//  currCommand = "pid";
+//  str = "";
+//  str += currCommand;
+//  unsigned int len = str.length();
   
-  currCommand.toCharArray(data.mystatus, sizeof(data.mystatus));
+//  if (pidStatus == "True") {str += " 1st"; len = str.length();}
+//  else { str = currCommand; }
+  
+//  while (len < sizeof(data.mystatus))
+//    {
+//      
+//      str += " ";
+//      len = str.length();
+//      
+//    }
+//    
+//  str.toCharArray(data.mystatus, sizeof(data.mystatus));
+ 
+  // data.mystatus = currCommand.c_str();
+  //txtData.toCharArray(data.mystatus, sizeof(data.mystatus));
+  
   data.timestamp = movingTime;
 
   str = "u = ";
   str += String(u,4);
-  str += " speedBottomLimit is ";
-  str += String(speedBottomLimit);
-  str.toCharArray(data.mytext, sizeof(data.mytext));
+//  str += " speedBottomLimit is ";
+//  str += String(speedBottomLimit);
+  len = str.length();
   
-//  Serial.println("PID !!!");
-//  Serial.flush();
-
+  while (len < sizeof(data.mytext))
+  {
+   str += " ";
+   len = str.length();
+    
+    }
+//  str = "Every move you make, every breath you take!";
+  
+  str.toCharArray(data.mytext, sizeof(data.mytext));  //sizeof(data.mytext) == 43 bytes
 
  
   Serial.write((byte*)&data, sizeof(data));
@@ -439,6 +505,7 @@ md.setM2Speed(m2Speed);
   Eprev = E;
   dltEprev = gradE;
   E_SignChanged = false;
+  dltEchangedSign=false;
   
   
 
@@ -448,13 +515,13 @@ md.setM2Speed(m2Speed);
 
 void MoveIfStopped()
 {
-  int delta_A1, delta_A2; // разница с прошлым значением  
+//  int delta_A1, delta_A2; // разница с прошлым значением  
   float f1Speed = 0.0;
   float f2Speed = 0.0; // вещественное значение Скорости
   
   
-  delta_A1 = posAm1 - posAm1_prev;
-  delta_A2 = posAm2 - posAm2_prev;
+//  delta_A1 = posAm1 - posAm1_prev;
+//  delta_A2 = posAm2 - posAm2_prev;
 
   while (((posAm1 - posAm1_prev)<10) || ((posAm2 - posAm2_prev) < 10)) // По "ИЛИ" должен включаться ПИД
   {

@@ -2,6 +2,7 @@
 
 STATDATA="statData.txt"
 SCRIPT="calibration.py"
+START=$(date)
 
 cp /dev/null $STATDATA
 numOfCycles=15
@@ -13,5 +14,6 @@ do
  sleep 1 
  n=$((n+1))
 done
-
-echo "Bash script finished"
+FINISH=$(date)
+echo "Started at $START"
+echo "Finished at $FINISH"
